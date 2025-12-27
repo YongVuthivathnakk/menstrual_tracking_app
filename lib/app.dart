@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 import 'package:menstrual_tracking_app/ui/pages/start_page.dart';
 
 class AppPage extends StatelessWidget {
@@ -6,6 +7,6 @@ class AppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StartPage();
+    return Homepage();
   }
 }

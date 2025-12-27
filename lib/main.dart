@@ -12,8 +12,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      title: 'Flow App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: "Nunito",
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xff9A0002),
+          brightness: Brightness.light,
+          surface: Colors.white,
+        ),
+        scaffoldBackgroundColor: const Color(0xffFAE5E4),
+      ),
       home: AppPage(),
     );
   }
