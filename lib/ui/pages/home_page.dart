@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/ui/widget/cycle_tracker.dart';
+import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
 
 class Homepage extends StatelessWidget {
   const Homepage({super.key});
@@ -10,10 +10,7 @@ class Homepage extends StatelessWidget {
       appBar: AppBar(
         title: Center(child: Image.asset("assets/images/Flow.png")),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: CycleTrackerCard(),
-      ),
+      body: CycleTrackerCard(),
     );
   }
 }

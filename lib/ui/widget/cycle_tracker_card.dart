@@ -1,21 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
+import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
+import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
 class CycleTrackerCard extends StatelessWidget {
   const CycleTrackerCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: EdgeInsets.all(30),
-        child: Column(
-          spacing: 20,
-          children: [Title(), CurrentDate(), PeriodChart()],
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Card(
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(30),
+          child: Column(
+            spacing: 20,
+            children: [Title(), CurrentDate(), PeriodChart(), LogButtons()],
+          ),
         ),
       ),
+    );
+  }
+}
+
+class LogButtons extends StatelessWidget {
+  const LogButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [LogPeriodButton(), LogMoodAndSymptomButton()],
     );
   }
 }
@@ -42,6 +60,13 @@ class _CurrentDateState extends State<CurrentDate> {
   List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   DateTime now = DateTime.now();
   String get formattedDate => DateFormat("MMMM yyyy").format(now);
+
+  void onFullCalandar() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (BuildContext context) => CalandarPage()),
+    );
+  }
 
   List<Widget> _showCurrentDate() {
     DateTime monday = now.subtract(Duration(days: now.weekday - 1));
@@ -105,7 +130,7 @@ class _CurrentDateState extends State<CurrentDate> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: onFullCalandar,
               child: Text(
                 "View Full Calandar",
                 style: TextStyle(
@@ -123,7 +148,7 @@ class _CurrentDateState extends State<CurrentDate> {
             IconButton(
               onPressed: () {},
               icon: SvgPicture.asset(
-                "assets/icons/chevron-left.svg",
+                SvgIcons.chevronLeft,
                 width: 30,
                 height: 30,
               ),
@@ -132,7 +157,7 @@ class _CurrentDateState extends State<CurrentDate> {
             IconButton(
               onPressed: () {},
               icon: SvgPicture.asset(
-                "assets/icons/chevron-right.svg",
+                SvgIcons.chevronRight,
                 width: 30,
                 height: 30,
               ),
@@ -164,7 +189,7 @@ class Title extends StatelessWidget {
             width: 25,
             height: 25,
             child: SvgPicture.asset(
-              "assets/icons/calandar.svg",
+              SvgIcons.calandar,
               colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
           ),
