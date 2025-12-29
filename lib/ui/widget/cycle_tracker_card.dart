@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
+import 'package:menstrual_tracking_app/ui/pages/history_page.dart';
 import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
@@ -179,21 +182,43 @@ class Title extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(50),
-            color: const Color(0xff9A0002),
-          ),
-          child: SizedBox(
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => 
+                HistoryPage(),
+              ),
+            );
+          },
+          icon: SvgPicture.asset(
             width: 25,
             height: 25,
-            child: SvgPicture.asset(
-              SvgIcons.calandar,
-              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            ),
+            SvgIcons.calandar, 
+            colorFilter: 
+              ColorFilter.mode(
+                  Color(0xff9A0002),
+                  BlendMode.srcIn
+              ),
           ),
         ),
+
+        // Container(
+        //   padding: EdgeInsets.all(10),
+        //   decoration: BoxDecoration(
+        //     borderRadius: BorderRadius.circular(50),
+        //     color: const Color(0xff9A0002),
+        //   ),
+          
+        //   // child: SizedBox(
+        //   //   width: 25,
+        //   //   height: 25,
+        //   //   child: SvgPicture.asset(
+        //   //     SvgIcons.calandar,
+        //   //     colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+        //   //   ),
+        //   // ),
+        // ),
         const Text(
           "Cycle Tracker",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

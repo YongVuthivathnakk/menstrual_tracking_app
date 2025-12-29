@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/app.dart';
+import 'package:menstrual_tracking_app/ui/pages/start_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xffFAE5E4),
       ),
-      home: AppPage(),
+      home: StartPage(),
     );
   }
 }
