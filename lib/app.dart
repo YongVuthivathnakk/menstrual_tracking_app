@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 
 class AppPage extends StatelessWidget {
   const AppPage({super.key});
