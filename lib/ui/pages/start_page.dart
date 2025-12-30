@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
 
 class StartPage extends StatelessWidget {
@@ -24,7 +25,7 @@ class StartPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => CycleTrackerCard()),
+                  MaterialPageRoute(builder: (context) => AppPage()),
                 );
               },
               child: Text(
