@@ -1,10 +1,12 @@
-import 'dart:ui';
+//import 'dart:ui';
 
+import 'package:dotted_border/dotted_border.dart';
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
-import 'package:menstrual_tracking_app/ui/pages/history_page.dart';
+//import 'package:menstrual_tracking_app/ui/pages/history_page.dart';
 import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
@@ -96,22 +98,24 @@ class _CurrentDateState extends State<CurrentDate> {
             dayName,
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
-          SizedBox(height: 10),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              color: isToday ? const Color(0xffE39895) : null,
-              border: isToday
-                  ? Border.all(color: const Color(0xff9A0002), width: 2)
-                  : null,
-            ),
-            child: Text(
-              dayNumber,
-              style: TextStyle(
-                fontSize: 14,
-                color: isToday ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
+          //SizedBox(height: 10),
+          DottedBorder(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                color: isToday ? const Color(0xffE39895) : null,
+                border: isToday
+                    ? Border.all(color: const Color(0xff9A0002), width: 2)
+                    : null,
+              ),
+              child: Text(
+                dayNumber,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isToday ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -180,50 +184,30 @@ class Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      spacing: 65.5,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => 
-                HistoryPage(),
-              ),
-            );
-          },
-          icon: SvgPicture.asset(
+        Container(
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color: const Color(0xff9A0002),
+          ),
+          
+          child: SizedBox(
             width: 25,
             height: 25,
-            SvgIcons.calandar, 
-            colorFilter: 
-              ColorFilter.mode(
-                  Color(0xff9A0002),
-                  BlendMode.srcIn
-              ),
+            child: SvgPicture.asset(
+              SvgIcons.calandar,
+              colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
+            ),
           ),
         ),
-
-        // Container(
-        //   padding: EdgeInsets.all(10),
-        //   decoration: BoxDecoration(
-        //     borderRadius: BorderRadius.circular(50),
-        //     color: const Color(0xff9A0002),
-        //   ),
-          
-        //   // child: SizedBox(
-        //   //   width: 25,
-        //   //   height: 25,
-        //   //   child: SvgPicture.asset(
-        //   //     SvgIcons.calandar,
-        //   //     colorFilter: ColorFilter.mode(Colors.white, BlendMode.srcIn),
-        //   //   ),
-        //   // ),
-        // ),
         const Text(
           "Cycle Tracker",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        SizedBox(), // empty box
+       // empty box
       ],
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/app.dart';
+//import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/pages/start_page.dart';
 
 void main() {

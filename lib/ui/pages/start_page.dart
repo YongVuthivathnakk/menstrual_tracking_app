@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
+import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
+//import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -16,27 +17,33 @@ class StartPage extends StatelessWidget {
             Center(
               child: Image.asset('assets/images/Logo.png')
             ),
-            TextButton(
+            SizedBox(
+              width: 250,
+              height: 50,
+              child: TextButton(
                 style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
                   backgroundColor: Color(0xff9A0002),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => 
-                    CycleTrackerCard(),
+                    Homepage(),
                   ),
                 );
               },
-              child: Text("Get Started", 
+              child: Text(
+                "Get Started",               
                 style: TextStyle(
-                  fontSize: 24, 
-                  color: Color(0xffE39895),
+                  fontSize: 24,
+                  color: Colors.white,
                 ),
               ),
+            ),
             ),
           ],
         ),
