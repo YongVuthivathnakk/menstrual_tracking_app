@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
         scaffoldBackgroundColor: const Color(0xffFAE5E4),
       ),
-      home: StartPage(),
+      home: const StartPage(),
     );
   }
 }

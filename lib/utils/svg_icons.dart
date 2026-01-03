@@ -6,5 +6,7 @@ class SvgIcons {
   static const String circleAlert = 'assets/icons/circle-alert.svg';
   static const String filledHeart = 'assets/icons/filled-heart.svg';
   static const String arrowLeft = 'assets/icons/arrow-left.svg';
-  static const String logo = 'assets/images/logo.png';
+  static const String house = 'assets/icons/house.svg';
+  static const String history = 'assets/icons/history.svg';
+  //static const String logo = 'assets/images/logo.png';
 }
