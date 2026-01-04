@@ -10,7 +10,7 @@ class Homepage extends StatelessWidget {
       appBar: AppBar(
         title: Center(child: Image.asset("assets/images/Flow.png")),
       ),
-      body: CycleTrackerCard(),
+      body: ListView(children: [CycleTrackerCard()]),
     );
   }
 }

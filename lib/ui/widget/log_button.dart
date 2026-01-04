@@ -24,14 +24,14 @@ class _LogPeriodButtonState extends State<LogPeriodButton> {
       onPressed: onLog,
       style: TextButton.styleFrom(
         backgroundColor: Color(0xffE39895),
-        minimumSize: const Size(200, 50),
+        minimumSize: const Size(120, 40),
       ),
       child: Text(
         "Log Period",
         style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight(600),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -63,14 +63,14 @@ class _LogMoodAndSymptomButtonState extends State<LogMoodAndSymptomButton> {
       onPressed: onLog,
       style: TextButton.styleFrom(
         backgroundColor: Color(0xff3396D3),
-        minimumSize: const Size(200, 50),
+        minimumSize: const Size(120, 40),
       ),
       child: Text(
-        "Log Mood & Symptoms",
+        "Log Symptoms",
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 12,
           color: Colors.white,
-          fontWeight: FontWeight(600),
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

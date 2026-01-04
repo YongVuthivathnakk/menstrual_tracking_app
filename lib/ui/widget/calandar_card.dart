@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:menstrual_tracking_app/model/period_log.dart';
+import 'package:menstrual_tracking_app/services/period_log_database.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
+
+enum CalendarType { start, end }
 
 class DefaultCalandar extends StatefulWidget {
   const DefaultCalandar({super.key});
@@ -12,7 +16,8 @@ class DefaultCalandar extends StatefulWidget {
 
 class _DefaultCalandarState extends State<DefaultCalandar> {
   DateTime currentMonth = DateTime.now();
-
+  int averagePeriodLength = 0;
+  List<PeriodLog> periodLogs = [];
   List<String> fullWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   List<DateTime> _daysInMonth(DateTime month) {
@@ -24,6 +29,59 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
     return List.generate(42, (index) {
       return startOfCalendar.add(Duration(days: index));
     });
+  }
+
+  Future<void> _getAveragePeriodDuration() async {
+    final logs = await PeriodLogDatabase.instance.getAllPeriodLogs();
+
+    if (logs.isEmpty) return;
+
+    int totalBleedingDays = 0;
+    for (final log in logs) {
+      // Adding 1 ensures that if start and end are the same day, it counts as 1 day
+      totalBleedingDays += log.endDate.difference(log.startDate).inDays + 1;
+    }
+
+    setState(() {
+      periodLogs = logs;
+      averagePeriodLength = (totalBleedingDays / logs.length).round();
+    });
+  }
+
+  DateTime? getEarliestStartDate() {
+    if (periodLogs.isEmpty) return null;
+
+    // Find the log with the oldest (minimum) start date
+    return periodLogs
+        .reduce((a, b) => a.startDate.isBefore(b.startDate) ? a : b)
+        .startDate;
+  }
+
+  bool _isDatePredicted(DateTime date) {
+    final earliestStart = getEarliestStartDate();
+    if (earliestStart == null) return false;
+
+    // 1. Normalize dates to ignore time (midnight)
+    final anchor = DateTime(
+      earliestStart.year,
+      earliestStart.month,
+      earliestStart.day,
+    );
+    final checkDate = DateTime(date.year, date.month, date.day);
+
+    // 2. We don't predict for dates before the first log
+    if (checkDate.isBefore(anchor)) return false;
+
+    // 3. Calculate total days since the very first start date
+    final totalDaysSinceStart = checkDate.difference(anchor).inDays;
+
+    // 4. Use modulo 28 to see where this day falls in the repeating cycle
+    final cycleDay = totalDaysSinceStart % 28;
+
+    // 5. If the day is between 0 and (averageLength or 5), it's a predicted period day
+    int window = averagePeriodLength > 0 ? averagePeriodLength : 5;
+
+    return cycleDay >= 0 && cycleDay < window;
   }
 
   void onNext() {
@@ -39,20 +97,25 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _getAveragePeriodDuration();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
     final days = _daysInMonth(currentMonth);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade300, width: 1.5),
         color: Colors.white,
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           /// HEADER
           Header(
@@ -97,8 +160,9 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
                   day.day == today.day &&
                   day.month == today.month &&
                   day.year == today.year;
-
               final isCurrentMonth = day.month == currentMonth.month;
+
+              final isPredicted = _isDatePredicted(day);
 
               return Center(
                 child: Container(
@@ -107,14 +171,22 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isToday ? Color(0xff9D1B1B) : Colors.transparent,
+                    color: isToday
+                        ? const Color(0xffBBDCE5)
+                        : (isPredicted
+                              ? const Color(0xffE39895)
+                              : Colors.transparent),
                   ),
                   child: Text(
                     '${day.day}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: isCurrentMonth
-                          ? (isToday ? Colors.white : Colors.black)
+                          ? (isToday
+                                ? Colors.white
+                                : isPredicted
+                                ? Colors.white
+                                : null)
                           : Colors.grey.shade300,
                     ),
                   ),
@@ -151,21 +223,33 @@ class _HeaderState extends State<Header> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           style: IconButton.styleFrom(
+            fixedSize: const Size(32, 32),
             side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
-          icon: SvgPicture.asset(SvgIcons.chevronLeft),
+          icon: SvgPicture.asset(SvgIcons.chevronLeft, width: 18, height: 18),
           onPressed: widget.onPervious,
         ),
         Text(
           DateFormat('MMMM yyyy').format(widget.currentMonth),
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         IconButton(
-          icon: SvgPicture.asset(SvgIcons.chevronRight),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           style: IconButton.styleFrom(
+            fixedSize: const Size(32, 32),
             side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
+          icon: SvgPicture.asset(SvgIcons.chevronRight, height: 18, width: 18),
           onPressed: widget.onNext,
         ),
       ],
@@ -174,7 +258,18 @@ class _HeaderState extends State<Header> {
 }
 
 class SelectableCalendar extends StatefulWidget {
-  const SelectableCalendar({super.key});
+  final CalendarType type;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final ValueChanged<DateTime> onDateSelected;
+
+  const SelectableCalendar({
+    super.key,
+    required this.type,
+    this.startDate,
+    this.endDate,
+    required this.onDateSelected,
+  });
 
   @override
   State<SelectableCalendar> createState() => _SelectableCalendarState();
@@ -182,16 +277,14 @@ class SelectableCalendar extends StatefulWidget {
 
 class _SelectableCalendarState extends State<SelectableCalendar> {
   late DateTime _currentMonth;
-  DateTime? _selectedDate;
 
   @override
   void initState() {
     super.initState();
     _currentMonth = DateTime.now();
-    _selectedDate = DateTime.now(); // optional: auto-select today
   }
 
-  List<String> fullWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  List<String> fullWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   List<DateTime> _daysInMonth(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
@@ -217,8 +310,8 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
     final days = _daysInMonth(_currentMonth);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 50),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 25),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade300, width: 1.5),
@@ -274,40 +367,57 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
 
               final isCurrentMonth = day.month == _currentMonth.month;
 
-              final isSelected =
-                  _selectedDate != null &&
-                  day.year == _selectedDate!.year &&
-                  day.month == _selectedDate!.month &&
-                  day.day == _selectedDate!.day;
+              final isStartSelected =
+                  widget.startDate != null &&
+                  day.year == widget.startDate!.year &&
+                  day.month == widget.startDate!.month &&
+                  day.day == widget.startDate!.day;
+
+              final isEndSelected =
+                  widget.endDate != null &&
+                  day.year == widget.endDate!.year &&
+                  day.month == widget.endDate!.month &&
+                  day.day == widget.endDate!.day;
+
+              final rangeEnd = widget.startDate?.add(const Duration(days: 6));
+
+              final isInRange =
+                  widget.startDate != null &&
+                  !day.isBefore(widget.startDate!) &&
+                  !day.isAfter(rangeEnd!);
+
+              bool isDisabled = false;
+
+              if (widget.type == CalendarType.end) {
+                isDisabled = widget.startDate == null || !isInRange;
+              }
 
               return GestureDetector(
-                onTap: !isCurrentMonth
-                    ? null
-                    : () {
-                        setState(() {
-                          _selectedDate = day;
-                        });
-                      },
+                onTap: isCurrentMonth && !isDisabled
+                    ? () => widget.onDateSelected(day)
+                    : null,
                 child: Center(
                   child: Container(
-                    width: 38,
-                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected
-                          ? const Color(0xff9D1B1B)
-                          : isToday
+                      color: isToday
+                          ? const Color(0xff3396D3)
+                          : isStartSelected || isEndSelected
                           ? const Color(0xffE39895)
+                          : isInRange && widget.type == CalendarType.end
+                          ? const Color.fromARGB(255, 255, 227, 226)
                           : Colors.transparent,
                     ),
                     child: Text(
                       '${day.day}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: !isCurrentMonth
+                        color: isToday
+                            ? Colors.white
+                            : (!isCurrentMonth || isDisabled)
                             ? Colors.grey.shade300
-                            : isSelected
+                            : (isStartSelected || isEndSelected)
                             ? Colors.white
                             : Colors.black,
                       ),

@@ -10,6 +10,31 @@ class PeriodLog {
     required this.logDate,
     required this.startDate,
     required this.endDate,
-    required this.cycleLength,
+    this.cycleLength = 28,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'logDate': logDate.toIso8601String(),
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'cycleLength': cycleLength,
+    };
+  }
+
+  factory PeriodLog.fromMap(Map<String, dynamic> json) {
+    return PeriodLog(
+      id: json['id'],
+      logDate: DateTime.parse(json['logDate']),
+      startDate: DateTime.parse(json['startDate']),
+      endDate: DateTime.parse(json['endDate']),
+      cycleLength: json['cycleLength'] ?? 28,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'PeriodLog(id: $id, start: ${startDate.toIso8601String()}, end: ${endDate.toIso8601String()}, cycle: $cycleLength days)';
+  }
 }

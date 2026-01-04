@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/app.dart';
-import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
