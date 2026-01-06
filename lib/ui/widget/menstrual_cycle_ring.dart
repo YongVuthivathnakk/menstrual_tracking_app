@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/model/cycle_math.dart';
 import 'package:menstrual_tracking_app/utils/cycle_ring_painter.dart';
 
-class MenstrualCycleRing extends StatelessWidget {
+class MenstrualCycleRing extends StatefulWidget {
   final int cycleLength;
   final int periodLength;
   final int currentDay;
@@ -15,16 +15,21 @@ class MenstrualCycleRing extends StatelessWidget {
   });
 
   @override
+  State<MenstrualCycleRing> createState() => _MenstrualCycleRingState();
+}
+
+class _MenstrualCycleRingState extends State<MenstrualCycleRing> {
+  @override
   Widget build(BuildContext context) {
     final math = CycleMath(
-      cycleLength: cycleLength,
-      periodLength: periodLength,
-      currentDay: currentDay,
+      cycleLength: widget.cycleLength,
+      periodLength: widget.periodLength,
+      currentDay: widget.currentDay,
     );
 
     final phase = math.currentPhase;
     final angle =
-        (currentDay / cycleLength) * 2 * 3.141592653589793 -
+        (widget.currentDay / widget.cycleLength) * 2 * 3.141592653589793 -
         (3.141592653589793 / 2);
 
     return SizedBox(
@@ -38,23 +43,27 @@ class MenstrualCycleRing extends StatelessWidget {
             painter: CycleRingPainter(math: math),
           ),
           CycleCenterText(
-            day: currentDay,
+            periodLength: widget.periodLength,
+            day: widget.currentDay,
             phase: phase.label, // Accessed from enum
             ovulationInfo: phase.info, // Accessed from enum
           ),
-          CycleHeart(
-            angle: angle,
-            radius: 110,
-            color: phase.color, // Accessed from enum
-          ),
+          widget.periodLength != 0
+              ? CycleHeart(
+                  angle: angle,
+                  radius: 110,
+                  color: phase.color, // Accessed from enum
+                )
+              : SizedBox(),
         ],
       ),
     );
   }
 }
 
-class CycleCenterText extends StatelessWidget {
+class CycleCenterText extends StatefulWidget {
   final int day;
+  final int periodLength;
   final String phase;
   final String ovulationInfo;
 
@@ -63,15 +72,21 @@ class CycleCenterText extends StatelessWidget {
     required this.day,
     required this.phase,
     required this.ovulationInfo,
+    required this.periodLength,
   });
 
+  @override
+  State<CycleCenterText> createState() => _CycleCenterTextState();
+}
+
+class _CycleCenterTextState extends State<CycleCenterText> {
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Day $day',
+          'Day ${widget.periodLength != 0 ? widget.day : 0}',
           style: TextStyle(
             fontSize: 18,
             color: Colors.red.shade300,
@@ -80,14 +95,14 @@ class CycleCenterText extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          phase,
+          widget.periodLength != 0 ? widget.phase : "No Data",
           style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         Container(width: 40, height: 2, color: Colors.grey.shade300),
         const SizedBox(height: 12),
         Text(
-          ovulationInfo,
+          widget.periodLength != 0 ? widget.ovulationInfo : "NO DATA",
           style: const TextStyle(
             fontSize: 14,
             letterSpacing: 1.2,

@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/model/mood_log.dart';
 import 'package:menstrual_tracking_app/model/note_log.dart';
 import 'package:menstrual_tracking_app/model/symptom_log.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/widget/back_app_bar.dart';
+import 'package:menstrual_tracking_app/ui/widget/empty_date_dialog.dart';
 import 'package:menstrual_tracking_app/ui/widget/mood_log_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/note_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
@@ -22,53 +26,80 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
 
   List<Mood> moodList = [];
   Map<Symptom, Intensity> symptomMap = {};
-  String newNote = '';
-  String newHeading = '';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    headingController = TextEditingController(text: newHeading);
-    noteController = TextEditingController(text: newNote);
+    headingController = TextEditingController();
+    noteController = TextEditingController();
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    super.dispose();
     headingController.dispose();
     noteController.dispose();
+    super.dispose();
   }
 
-  void buildingJson() {}
-
-  void getMood() {
-    final MoodLog newMooodLog = MoodLog(id: Uuid().v4(), mood: moodList);
-    debugPrint(newMooodLog.toString());
+  MoodLog getMood() {
+    return MoodLog(id: Uuid().v4(), moods: moodList, logDate: DateTime.now());
   }
 
-  void getSymptom() {
-    final SymptomLog newSymptomlog = SymptomLog(
+  SymptomLog getSymptom() {
+    return SymptomLog(
       id: Uuid().v4(),
       symptoms: symptomMap,
+      logDate: DateTime.now(),
     );
-    debugPrint(newSymptomlog.toString()); //working
   }
 
-  void getNotes() {
-    final NoteLog newNoteLog = NoteLog(
+  NoteLog getNotes() {
+    return NoteLog(
       id: Uuid().v4(),
-      note: newNote,
-      heading: newHeading,
+      logDate: DateTime.now(),
+      note: headingController.text.trim(),
+      heading: noteController.text.trim(),
     );
-    debugPrint(newNoteLog.toString());
+  }
+
+  void showError() {
+    showDialog(context: context, builder: (_) => EmptyDateDialog());
   }
 
   void logData() {
-    getMood();
-    getSymptom();
-    getNotes();
+    final newHeading = headingController.text.trim();
+    final newNote = noteController.text.trim();
+
+    if (moodList.isEmpty || symptomMap.isEmpty) {
+      showError();
+      return;
+    }
+
+    if (newHeading.isNotEmpty && newNote.isEmpty) {
+      showError();
+      return;
+    }
+
+    if (newHeading.isEmpty && newNote.isNotEmpty) {
+      showError();
+      return;
+    }
+
+    if (newHeading.isNotEmpty && newNote.isNotEmpty) {
+      final newNote = getNotes();
+      // await MenstrualLogDatabase.instance.insertNoteLog(getNotes());
+    }
+
+    final newMood = getMood();
+    final newSymptoms = getSymptom();
+    // await MenstrualLogDatabase.instance.insertMoodLog(getMood());
+    // await MenstrualLogDatabase.instance.insertSymptomLog(getSymptom());
+
+    debugPrint("Submitx");
+
+    // Navigator.pop(context);
   }
 
   @override
@@ -106,18 +137,6 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: NoteCard(
-              heading: newHeading,
-              note: newNote,
-              onHeadingChanged: (value) {
-                setState(() {
-                  newHeading = value;
-                });
-              },
-              onNoteChanged: (value) {
-                setState(() {
-                  newNote = value;
-                });
-              },
               headingController: headingController,
               noteController: noteController,
             ),

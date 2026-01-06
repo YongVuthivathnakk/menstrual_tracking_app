@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/model/period_log.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_mood_and_symptom_page.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_period_page.dart';
+import 'package:menstrual_tracking_app/ui/widget/menstrual_cycle_ring.dart';
 
 // Log Period Button
 class LogPeriodButton extends StatefulWidget {
-  const LogPeriodButton({super.key});
+  final VoidCallback onDataChanged;
+  const LogPeriodButton({super.key, required this.onDataChanged});
 
   @override
   State<LogPeriodButton> createState() => _LogPeriodButtonState();
@@ -13,20 +17,25 @@ class LogPeriodButton extends StatefulWidget {
 class _LogPeriodButtonState extends State<LogPeriodButton> {
   @override
   Widget build(BuildContext context) {
-    void onLog() {
-      Navigator.push(
+    void onLog() async {
+      PeriodLog? item = await Navigator.push(
         context,
         MaterialPageRoute(builder: (BuildContext context) => LogPeriodPage()),
       );
+
+      if (item != null) {
+        await MenstrualLogDatabase.instance.insertPeriodLog(item);
+        widget.onDataChanged;
+      }
     }
 
     return TextButton(
       onPressed: onLog,
       style: TextButton.styleFrom(
-        backgroundColor: Color(0xffE39895),
+        backgroundColor: const Color(0xffE39895),
         minimumSize: const Size(120, 40),
       ),
-      child: Text(
+      child: const Text(
         "Log Period",
         style: TextStyle(
           color: Colors.white,
@@ -62,7 +71,7 @@ class _LogMoodAndSymptomButtonState extends State<LogMoodAndSymptomButton> {
     return TextButton(
       onPressed: onLog,
       style: TextButton.styleFrom(
-        backgroundColor: Color(0xff3396D3),
+        backgroundColor: const Color(0xff3396D3),
         minimumSize: const Size(120, 40),
       ),
       child: Text(

@@ -44,7 +44,7 @@ class _SymptomLogCardState extends State<SymptomLogCard> {
           children: [
             const LogHeader(
               title: 'Symptoms Log',
-              description: 'Select sypmtoms (Optional):',
+              description: 'Select sypmtoms',
             ),
             const SizedBox(height: 20),
 

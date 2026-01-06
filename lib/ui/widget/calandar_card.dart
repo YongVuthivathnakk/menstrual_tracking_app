@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/model/period_log.dart';
-import 'package:menstrual_tracking_app/services/period_log_database.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
 enum CalendarType { start, end }
@@ -32,7 +32,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
   }
 
   Future<void> _getAveragePeriodDuration() async {
-    final logs = await PeriodLogDatabase.instance.getAllPeriodLogs();
+    final logs = await MenstrualLogDatabase.instance.getAllPeriodLogs();
 
     if (logs.isEmpty) return;
 
@@ -133,7 +133,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
                 .map(
                   (d) => Text(
                     d,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.grey,
                       fontWeight: FontWeight.bold,
                     ),
@@ -240,7 +240,7 @@ class _HeaderState extends State<Header> {
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         IconButton(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.all(0),
           constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
           style: IconButton.styleFrom(
             fixedSize: const Size(32, 32),
@@ -284,7 +284,7 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
     _currentMonth = DateTime.now();
   }
 
-  List<String> fullWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  final List<String> fullWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   List<DateTime> _daysInMonth(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);

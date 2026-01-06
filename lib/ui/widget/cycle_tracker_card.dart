@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/model/cycle_math.dart';
 import 'package:menstrual_tracking_app/model/period_log.dart';
-import 'package:menstrual_tracking_app/services/period_log_database.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
 import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/ui/widget/menstrual_cycle_ring.dart';
@@ -21,7 +21,7 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
   int averagePeriodLength = 0;
 
   int calculateCurrentCycleDay(List<PeriodLog> logs) {
-    if (logs.isEmpty) return 1;
+    if (logs.isEmpty) return 0;
 
     final earliestStart = logs
         .reduce((a, b) => a.startDate.isBefore(b.startDate) ? a : b)
@@ -41,8 +41,8 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
     return (diff % 28) + 1;
   }
 
-  Future<void> _getAveragePeriodDuration() async {
-    final logs = await PeriodLogDatabase.instance.getAllPeriodLogs();
+  Future<void> getAveragePeriodDuration() async {
+    final logs = await MenstrualLogDatabase.instance.getAllPeriodLogs();
 
     if (logs.isEmpty) return;
 
@@ -62,7 +62,7 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _getAveragePeriodDuration();
+    getAveragePeriodDuration();
   }
 
   @override
@@ -75,7 +75,10 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
           spacing: 20,
           children: [
             Title(),
-            CurrentDate(),
+            CurrentDate(
+              averagePeriodLength: averagePeriodLength,
+              periodLogs: periodLogs,
+            ),
             SizedBox(),
             MenstrualCycleRing(
               cycleLength: 28,
@@ -122,8 +125,32 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [LogPeriodButton(), LogMoodAndSymptomButton()],
+                children: [
+                  LogPeriodButton(
+                    onDataChanged: () => getAveragePeriodDuration(),
+                  ),
+                  LogMoodAndSymptomButton(),
+                ],
               ),
+            ),
+
+            TextButton(
+              onPressed: () async {
+                await MenstrualLogDatabase.instance.deleteAllPeriodLogs();
+                setState(() {
+                  periodLogs = [];
+                  averagePeriodLength = 0;
+                });
+                debugPrint("Deleted");
+              },
+              child: Text("delete data"),
+            ),
+
+            TextButton(
+              onPressed: () {
+                getAveragePeriodDuration();
+              },
+              child: Text("reload"),
             ),
             SizedBox(),
           ],
@@ -162,7 +189,13 @@ class PhaseLabel extends StatelessWidget {
 // Current Date
 
 class CurrentDate extends StatefulWidget {
-  const CurrentDate({super.key});
+  final int averagePeriodLength;
+  final List<PeriodLog> periodLogs;
+  const CurrentDate({
+    super.key,
+    required this.averagePeriodLength,
+    required this.periodLogs,
+  });
 
   @override
   State<CurrentDate> createState() => _CurrentDateState();
@@ -170,33 +203,50 @@ class CurrentDate extends StatefulWidget {
 
 class _CurrentDateState extends State<CurrentDate> {
   late DateTime currentWeekDate;
-  List<PeriodLog> periodLogs = [];
 
   DateTime? get earliestStart {
-    if (periodLogs.isEmpty) return null;
-    return periodLogs
+    if (widget.periodLogs.isEmpty) return null;
+    return widget.periodLogs
         .reduce((a, b) => a.startDate.isBefore(b.startDate) ? a : b)
         .startDate;
   }
 
-  bool isPredicted(DateTime date) {
+  DateTime? getEarliestStartDate() {
+    if (widget.periodLogs.isEmpty) return null;
+
+    // Find the log with the oldest (minimum) start date
+    return widget.periodLogs
+        .reduce((a, b) => a.startDate.isBefore(b.startDate) ? a : b)
+        .startDate;
+  }
+
+  bool _isDatePredicted(DateTime date) {
+    final earliestStart = getEarliestStartDate();
     if (earliestStart == null) return false;
 
+    // 1. Normalize dates to ignore time (midnight)
     final anchor = DateTime(
-      earliestStart!.year,
-      earliestStart!.month,
-      earliestStart!.day,
+      earliestStart.year,
+      earliestStart.month,
+      earliestStart.day,
     );
-
     final checkDate = DateTime(date.year, date.month, date.day);
 
+    // 2. We don't predict for dates before the first log
     if (checkDate.isBefore(anchor)) return false;
 
-    final totalDaySinceStart = checkDate.difference(anchor).inDays;
+    // 3. Calculate total days since the very first start date
+    final totalDaysSinceStart = checkDate.difference(anchor).inDays;
 
-    final cycleDay = totalDaySinceStart % 28; // Currently use 28 day cycle
+    // 4. Use modulo 28 to see where this day falls in the repeating cycle
+    final cycleDay = totalDaysSinceStart % 28;
 
-    return cycleDay >= 0 && cycleDay < 5;
+    // 5. If the day is between 0 and (averageLength or 5), it's a predicted period day
+    int window = widget.averagePeriodLength > 0
+        ? widget.averagePeriodLength
+        : 5;
+
+    return cycleDay >= 0 && cycleDay < window;
   }
 
   @override
@@ -204,14 +254,6 @@ class _CurrentDateState extends State<CurrentDate> {
     // TODO: implement initState
     super.initState();
     currentWeekDate = DateTime.now();
-    _loadPeriodLogs();
-  }
-
-  Future<void> _loadPeriodLogs() async {
-    final logs = await PeriodLogDatabase.instance.getAllPeriodLogs();
-    setState(() {
-      periodLogs = logs;
-    });
   }
 
   List<String> days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -225,27 +267,6 @@ class _CurrentDateState extends State<CurrentDate> {
       context,
       MaterialPageRoute(builder: (BuildContext context) => CalandarPage()),
     );
-  }
-
-  bool isInPeriod(DateTime date) {
-    for (final log in periodLogs) {
-      final start = DateTime(
-        log.startDate.year,
-        log.startDate.month,
-        log.startDate.day,
-      );
-
-      final end = DateTime(
-        log.endDate.year,
-        log.endDate.month,
-        log.endDate.day,
-      );
-
-      if (!date.isBefore(start) && !date.isAfter(end)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   void onNext() {
@@ -266,7 +287,7 @@ class _CurrentDateState extends State<CurrentDate> {
       // Find the day number in monday then add with index
       DateTime dayDate = monday.add(Duration(days: index));
 
-      bool isPredictedDay = isPredicted(dayDate);
+      bool isPredictedDay = _isDatePredicted(dayDate);
 
       // Get the current index of the day eg. "Mon", "Tue" ...
       String dayName = days[index];
@@ -334,14 +355,17 @@ class _CurrentDateState extends State<CurrentDate> {
             children: [
               Text(
                 formattedDate,
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               TextButton(
                 onPressed: onFullCalandar,
-                child: Text(
+                child: const Text(
                   "View Full Calandar",
                   style: TextStyle(
-                    color: const Color(0xff9A0002),
+                    color: Color(0xff9A0002),
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
