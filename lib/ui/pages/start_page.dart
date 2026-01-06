@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 
 class StartPage extends StatelessWidget {

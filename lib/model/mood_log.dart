@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 enum Mood {
   happy("Happy", "😀"),
   sad("Sad", "😢"),
@@ -5,7 +7,7 @@ enum Mood {
   anxious("Anxious", "😰"),
   calm("Calm", "😌"),
   moodSwings("Mood Swings", "🎢"),
-  irritability("Irritability", "😠"), // Fixed spelling
+  irritability("Irritability", "😠"),
   stress("Stress", "😫"),
   overwhelmed("Overwhelmed", "🌊"),
   lowMotivation("Low Motivation", "📉"),
@@ -20,16 +22,29 @@ enum Mood {
 
 class MoodLog {
   final String id;
-  final List<Mood> mood;
-  const MoodLog({required this.id, required this.mood});
+  final DateTime logDate;
+  final List<Mood> moods;
 
-  Map<String, dynamic> toJson() => {
-    "id": id,
-    "mood": mood.map((m) => m.name).toList(),
+  const MoodLog({required this.id, required this.moods, required this.logDate});
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'logDate': logDate.toIso8601String(),
+    'moods': jsonEncode(moods.map((m) => m.name).toList()),
   };
+
+  factory MoodLog.fromMap(Map<String, dynamic> map) {
+    return MoodLog(
+      id: map['id'],
+      logDate: DateTime.parse(map['logDate']),
+      moods: (jsonDecode(map['moods']) as List)
+          .map((e) => Mood.values.byName(e))
+          .toList(),
+    );
+  }
 
   @override
   String toString() {
-    return 'MoodLog(id: $id, moods: ${mood.map((m) => m.label).toList()})';
+    return 'MoodLog(id: $id, moods: ${moods.map((m) => m.label).toList()})';
   }
 }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/model/period_log.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/widget/back_app_bar.dart';
 import 'package:menstrual_tracking_app/ui/widget/calandar_card.dart';
+import 'package:menstrual_tracking_app/ui/widget/empty_date_dialog.dart';
+import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
+import 'package:uuid/uuid.dart';
 
 class LogPeriodPage extends StatefulWidget {
   const LogPeriodPage({super.key});
@@ -10,6 +15,40 @@ class LogPeriodPage extends StatefulWidget {
 }
 
 class _LogPeriodPageState extends State<LogPeriodPage> {
+  DateTime? startDate;
+  DateTime? endDate;
+
+  int periodLength = 0;
+
+  DateTime? get rangeEnd => startDate?.add(const Duration(days: 6));
+
+  void onSubmit() async {
+    if (startDate == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => EmptyDateDialog(),
+      );
+      return;
+    }
+
+    if (endDate == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => EmptyDateDialog(),
+      );
+      return;
+    }
+
+    final log = PeriodLog(
+      id: Uuid().v4(),
+      logDate: DateTime.now(),
+      startDate: startDate!,
+      endDate: endDate!,
+    );
+
+    Navigator.pop(context, log);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,46 +60,51 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
             child: Card(
               color: Colors.white,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
+                padding: const EdgeInsets.symmetric(vertical: 25),
                 child: Column(
-                  spacing: 40,
+                  spacing: 30,
                   children: [
                     Text(
                       "Log Period date",
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     Column(
-                      spacing: 20,
+                      spacing: 10,
                       children: [
                         const CalandarLabel(label: 'Start Date *'),
-                        const SelectableCalendar(),
+                        SelectableCalendar(
+                          type: CalendarType.start,
+                          startDate: startDate,
+                          endDate: endDate,
+                          onDateSelected: (date) {
+                            setState(() {
+                              startDate = date;
+                              endDate = null; // reset end date
+                            });
+                          },
+                        ),
                       ],
                     ),
                     Column(
-                      spacing: 20,
+                      spacing: 10,
                       children: [
                         const CalandarLabel(label: 'End Date *'),
-                        const SelectableCalendar(),
+                        SelectableCalendar(
+                          type: CalendarType.end,
+                          startDate: startDate,
+                          endDate: endDate,
+                          onDateSelected: (date) {
+                            setState(() {
+                              endDate = date;
+                            });
+                          },
+                        ),
                       ],
                     ),
-
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Color(0xffE39895),
-                        fixedSize: Size(350, 40),
-                      ),
-                      child: Text(
-                        "Log Period",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    SubmitButton(label: "Log Data", onSubmit: onSubmit),
                   ],
                 ),
               ),
