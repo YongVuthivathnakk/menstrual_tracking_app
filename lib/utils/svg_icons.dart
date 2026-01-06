@@ -8,5 +8,4 @@ class SvgIcons {
   static const String arrowLeft = 'assets/icons/arrow-left.svg';
   static const String house = 'assets/icons/house.svg';
   static const String history = 'assets/icons/history.svg';
-  //static const String logo = 'assets/images/logo.png';
 }

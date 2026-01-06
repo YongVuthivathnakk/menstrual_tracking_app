@@ -121,8 +121,6 @@ class _CurrentDateState extends State<CurrentDate> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 10),
-          //DottedBorder(           
-            //child: 
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                 decoration: BoxDecoration(
@@ -141,28 +139,6 @@ class _CurrentDateState extends State<CurrentDate> {
                   ),
                 ),
               ),
-            
-            // Container(
-            //   width: 40,
-            //   height: 40,
-            //   alignment: Alignment.center,
-            //   decoration: BoxDecoration(
-            //     borderRadius: BorderRadius.circular(500),
-            //     color: isToday ? const Color(0xffE39895) : null,
-            //     border: isToday
-            //         ? Border.all(color: const Color(0xff9A0002), width: 2)
-            //         : null,
-            //   ),
-            //   child: Text(
-            //     dayNumber,
-            //     textAlign: TextAlign.center,
-            //     style: TextStyle(
-            //     fontSize: 18,
-            //     color: isToday ? Colors.white : Colors.black,
-            //     fontWeight: FontWeight.bold,
-            //   ),
-            // ),
-          //),
         ],
       );
     });
