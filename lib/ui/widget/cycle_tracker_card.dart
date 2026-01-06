@@ -1,3 +1,7 @@
+
+
+//import 'package:dotted_border/dotted_border.dart';
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -5,6 +9,7 @@ import 'package:menstrual_tracking_app/model/cycle_math.dart';
 import 'package:menstrual_tracking_app/model/period_log.dart';
 import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
+//import 'package:menstrual_tracking_app/ui/pages/history_page.dart';
 import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/ui/widget/menstrual_cycle_ring.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
@@ -251,7 +256,6 @@ class _CurrentDateState extends State<CurrentDate> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentWeekDate = DateTime.now();
   }
@@ -336,8 +340,6 @@ class _CurrentDateState extends State<CurrentDate> {
                     : null,
                 fontWeight: FontWeight.bold,
               ),
-            ),
-          ),
         ],
       );
     });

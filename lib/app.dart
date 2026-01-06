@@ -6,6 +6,6 @@ class AppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Homepage();
+    return HomePage();
   }
 }
