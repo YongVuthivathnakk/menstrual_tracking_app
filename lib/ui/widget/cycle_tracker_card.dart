@@ -1,9 +1,12 @@
-import 'dart:ui';
 
+
+//import 'package:dotted_border/dotted_border.dart';
+//import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/ui/pages/calandar_page.dart';
+//import 'package:menstrual_tracking_app/ui/pages/history_page.dart';
 import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
@@ -63,7 +66,6 @@ class _CurrentDateState extends State<CurrentDate> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentWeekDate = DateTime.now();
   }
@@ -119,27 +121,24 @@ class _CurrentDateState extends State<CurrentDate> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 10),
-          Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(500),
-              color: isToday ? const Color(0xffE39895) : null,
-              border: isToday
-                  ? Border.all(color: const Color(0xff9A0002), width: 2)
-                  : null,
-            ),
-            child: Text(
-              dayNumber,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                color: isToday ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(100),
+                  color: isToday ? const Color(0xffE39895) : null,
+                  border: isToday
+                      ? Border.all(color: const Color(0xff9A0002), width: 2)
+                      : null,
+                ),
+                child: Text(
+                  dayNumber,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isToday ? Colors.white : Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ),
         ],
       );
     });
@@ -206,7 +205,8 @@ class Title extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      spacing: 65.5,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: EdgeInsets.all(10),
@@ -214,7 +214,6 @@ class Title extends StatelessWidget {
             borderRadius: BorderRadius.circular(50),
             color: const Color(0xff9A0002),
           ),
-
           child: SizedBox(
             width: 25,
             height: 25,
@@ -228,7 +227,7 @@ class Title extends StatelessWidget {
           "Cycle Tracker",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        SizedBox(), // empty box
+       // empty box
       ],
     );
   }

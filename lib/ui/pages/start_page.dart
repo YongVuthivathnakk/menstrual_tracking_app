@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/app.dart';
-import 'package:menstrual_tracking_app/ui/widget/cycle_tracker_card.dart';
+import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -9,28 +8,39 @@ class StartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 200,
           children: [
-            Center(child: Image.asset('assets/images/Logo.png')),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Color(0xff9A0002),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Center(
+              child: Image.asset('assets/images/Logo.png'),
+            ),
+            SizedBox(
+              width: 250,
+              height: 50,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: Color(0xff9A0002),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AppPage()),
-                );
-              },
-              child: Text(
-                "Get Started",
-                style: TextStyle(fontSize: 24, color: Color(0xffE39895)),
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>
+                      HomePage(),
+                    ),
+                  );
+                }, 
+                child: Text(
+                  "Get Started",
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
