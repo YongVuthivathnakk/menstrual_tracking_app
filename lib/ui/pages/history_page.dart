@@ -59,7 +59,7 @@ class HistoryPage extends StatelessWidget {
           const SizedBox(height: 16),
 
           SectionCard(
-            title: "Note Logs", 
+            title: "Note Logs",
             onTapFilter: () => debugPrint("Note filter tapped"),
             child: NotesLogRow(
               note: noteLog.note,
@@ -81,11 +81,13 @@ class SectionCard extends StatelessWidget {
   final String title;
   final VoidCallback? onTapFilter;
   final Widget child;
+  final String? description;
 
   const SectionCard({
     super.key,
     required this.title,
     required this.child,
+    this.description,
     this.onTapFilter,
   });
 
@@ -121,6 +123,20 @@ class SectionCard extends StatelessWidget {
               FilterButton(onTap: onTapFilter),
             ],
           ),
+          if (description != null) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                description!,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
 
           // content row (one item in your screenshot)
