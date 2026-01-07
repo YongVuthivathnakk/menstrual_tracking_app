@@ -3,7 +3,7 @@ import 'package:menstrual_tracking_app/model/period_log.dart';
 import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_mood_and_symptom_page.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_period_page.dart';
-import 'package:menstrual_tracking_app/ui/widget/menstrual_cycle_ring.dart';
+import 'package:menstrual_tracking_app/services/data_change_notifier.dart';
 
 // Log Period Button
 class LogPeriodButton extends StatefulWidget {
@@ -25,7 +25,9 @@ class _LogPeriodButtonState extends State<LogPeriodButton> {
 
       if (item != null) {
         await MenstrualLogDatabase.instance.insertPeriodLog(item);
-        widget.onDataChanged;
+        widget.onDataChanged();
+        // Notify History and other listeners
+        DataChangeNotifier.instance.notify();
       }
     }
 
@@ -59,13 +61,18 @@ class LogMoodAndSymptomButton extends StatefulWidget {
 class _LogMoodAndSymptomButtonState extends State<LogMoodAndSymptomButton> {
   @override
   Widget build(BuildContext context) {
-    void onLog() {
-      Navigator.push(
+    void onLog() async {
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (BuildContext context) => LogMoodAndSymptomPage(),
         ),
       );
+
+      if (result == true) {
+        // Notify History and other listeners
+        DataChangeNotifier.instance.notify();
+      }
     }
 
     return TextButton(

@@ -35,27 +35,29 @@ class _MenstrualCycleRingState extends State<MenstrualCycleRing> {
     return SizedBox(
       width: 225,
       height: 225,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: const Size(225, 225),
-            painter: CycleRingPainter(math: math),
-          ),
-          CycleCenterText(
-            periodLength: widget.periodLength,
-            day: widget.currentDay,
-            phase: phase.label, // Accessed from enum
-            ovulationInfo: phase.info, // Accessed from enum
-          ),
-          widget.periodLength != 0
-              ? CycleHeart(
-                  angle: angle,
-                  radius: 110,
-                  color: phase.color, // Accessed from enum
-                )
-              : SizedBox(),
-        ],
+      child: RepaintBoundary(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+              size: const Size(225, 225),
+              painter: CycleRingPainter(math: math),
+            ),
+            CycleCenterText(
+              periodLength: widget.periodLength,
+              day: widget.currentDay,
+              phase: phase.label, // Accessed from enum
+              ovulationInfo: phase.info, // Accessed from enum
+            ),
+            widget.periodLength != 0
+                ? CycleHeart(
+                    angle: angle,
+                    radius: 110,
+                    color: phase.color, // Accessed from enum
+                  )
+                : SizedBox(),
+          ],
+        ),
       ),
     );
   }

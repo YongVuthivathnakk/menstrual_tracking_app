@@ -6,6 +6,7 @@ import 'package:menstrual_tracking_app/utils/log_header.dart';
 class MoodLogCard extends StatefulWidget {
   final List<Mood> moodList;
   final ValueChanged<List<Mood>> onMoodChanged;
+
   const MoodLogCard({
     super.key,
     required this.moodList,
@@ -17,78 +18,97 @@ class MoodLogCard extends StatefulWidget {
 }
 
 class _MoodLogCardState extends State<MoodLogCard> {
-  late List<Mood> selectedMoods;
+  late final ValueNotifier<Set<Mood>> _selectedMoods;
 
   @override
   void initState() {
     super.initState();
-    selectedMoods = List.from(widget.moodList);
+    _selectedMoods = ValueNotifier(widget.moodList.toSet());
   }
 
-  void onToggleMood(Mood mood) {
-    setState(() {
-      if (selectedMoods.contains(mood)) {
-        selectedMoods.remove(mood);
-      } else {
-        selectedMoods.add(mood);
-      }
-    });
+  void _toggleMood(Mood mood) {
+    final current = _selectedMoods.value;
 
-    widget.onMoodChanged(selectedMoods);
+    if (current.contains(mood)) {
+      current.remove(mood);
+    } else {
+      current.add(mood);
+    }
+
+    _selectedMoods.value = {...current};
+    widget.onMoodChanged(_selectedMoods.value.toList());
+  }
+
+  @override
+  void dispose() {
+    _selectedMoods.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const LogHeader(title: 'Mood Log', description: 'Track your mood'),
-            const SizedBox(height: 20),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300, width: 2),
-                borderRadius: BorderRadius.circular(20),
+    return RepaintBoundary(
+      child: Card(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const LogHeader(
+                title: 'Mood Log',
+                description: 'Track your mood',
               ),
-              child: Column(
-                children: [
-                  const Text(
-                    "How are you feeling today?",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 10,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 0.9,
-                        ),
-                    itemCount: Mood.values.length,
-                    itemBuilder: (context, index) {
-                      final mood = Mood.values[index];
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "How are you feeling today?",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
-                      return MoodButton(
-                        mood: mood,
-                        isSelected: selectedMoods.contains(mood),
-                        onTap: () => onToggleMood(mood),
-                      );
-                    },
-                  ),
-                ],
+                    /// Use Wrap instead of GridView to avoid expensive shrinkWrap layout
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return ValueListenableBuilder<Set<Mood>>(
+                          valueListenable: _selectedMoods,
+                          builder: (_, selected, _) {
+                            return Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: Mood.values.map((mood) {
+                                return SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: MoodButton(
+                                    mood: mood,
+                                    isSelected: selected.contains(mood),
+                                    onTap: () => _toggleMood(mood),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -117,12 +137,12 @@ class MoodButton extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 5,
         children: [
-          Text(mood.emoji, style: const TextStyle(fontSize: 38)),
+          Text(mood.emoji, style: const TextStyle(fontSize: 32)),
+          const SizedBox(height: 6),
           Text(
             mood.label,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
         ],

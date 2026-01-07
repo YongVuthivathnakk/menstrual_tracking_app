@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flow App',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: true,
       theme: ThemeData(
         fontFamily: "Nunito",
         colorScheme: ColorScheme.fromSeed(

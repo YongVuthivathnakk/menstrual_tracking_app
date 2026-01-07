@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/model/symptom_log.dart';
-import 'package:menstrual_tracking_app/utils/button_style.dart';
 import 'package:menstrual_tracking_app/utils/log_header.dart';
 
 class SymptomLogCard extends StatefulWidget {
@@ -18,152 +17,178 @@ class SymptomLogCard extends StatefulWidget {
 }
 
 class _SymptomLogCardState extends State<SymptomLogCard> {
-  late Map<Symptom, Intensity> selectedSymptoms = {};
+  // Use a ValueNotifier so only widgets depending on selection rebuild
+  late final ValueNotifier<Map<Symptom, Intensity>> _selectedSymptoms;
 
-  void onToggleIntensity(Intensity intensity) {}
+  @override
+  void initState() {
+    super.initState();
+    _selectedSymptoms = ValueNotifier(Map.from(widget.symptoms));
+  }
 
   void onToggleSymptom(Symptom symptom) {
-    setState(() {
-      if (selectedSymptoms.containsKey(symptom)) {
-        selectedSymptoms.remove(symptom);
-      } else {
-        selectedSymptoms[symptom] = Intensity.mild;
-      }
-    });
-    widget.onSymptomChanged(selectedSymptoms);
+    final current = Map<Symptom, Intensity>.from(_selectedSymptoms.value);
+    if (current.containsKey(symptom)) {
+      current.remove(symptom);
+    } else {
+      current[symptom] = Intensity.mild;
+    }
+    _selectedSymptoms.value = Map.unmodifiable(current);
+    widget.onSymptomChanged(_selectedSymptoms.value);
+  }
+
+  void updateIntensity(Symptom symptom, Intensity intensity) {
+    final current = Map<Symptom, Intensity>.from(_selectedSymptoms.value);
+    current[symptom] = intensity;
+    _selectedSymptoms.value = Map.unmodifiable(current);
+    widget.onSymptomChanged(_selectedSymptoms.value);
+  }
+
+  @override
+  void dispose() {
+    _selectedSymptoms.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const LogHeader(
-              title: 'Symptoms Log',
-              description: 'Select sypmtoms',
-            ),
-            const SizedBox(height: 20),
-
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade300, width: 2),
-                borderRadius: BorderRadius.circular(20),
+    return RepaintBoundary(
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              LogHeader(
+                title: "Symptom Log",
+                description: "How do you feel today?",
               ),
-              child: Column(
-                children: [
-                  // Symptom Selector
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: 1.5,
-                        ),
-                    itemCount: Symptom.values.length,
-                    itemBuilder: (context, index) {
-                      final symptom = Symptom.values[index];
+              const SizedBox(height: 20),
 
-                      return SymptomButton(
-                        symptom: symptom,
-                        isSelected: selectedSymptoms.containsKey(symptom),
-                        onPressed: () => onToggleSymptom(symptom),
+              // Symptom Selection Grid
+              ValueListenableBuilder<Map<Symptom, Intensity>>(
+                valueListenable: _selectedSymptoms,
+                builder: (context, selectedMap, _) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: Symptom.values.map((symptom) {
+                          final isSelected = selectedMap.containsKey(symptom);
+                          return SizedBox(
+                            width: 130,
+                            height: 50,
+                            child: SymptomButton(
+                              symptom: symptom,
+                              isSelected: isSelected,
+                              onPressed: () => onToggleSymptom(symptom),
+                            ),
+                          );
+                        }).toList(),
                       );
                     },
-                  ),
-
-                  // Intensity Selectors
-                  if (selectedSymptoms.isNotEmpty) ...[
-                    const SizedBox(height: 30),
-                    Text(
-                      "Set Intensity for Each Symptom:",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: selectedSymptoms.length,
-                      itemBuilder: (context, index) {
-                        final symptom = selectedSymptoms.keys.elementAt(index);
-                        final intensity = selectedSymptoms[symptom]!;
-
-                        return IntensityButton(
-                          key: ValueKey(symptom),
-                          selectedSymptom: symptom,
-                          selectedIntensity: intensity,
-                          onIntensityChanged: (newIntensity) {
-                            setState(() {
-                              selectedSymptoms[symptom] = newIntensity;
-                            });
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ],
+                  );
+                },
               ),
-            ),
-          ],
+
+              // Intensity Section
+              ValueListenableBuilder<Map<Symptom, Intensity>>(
+                valueListenable: _selectedSymptoms,
+                builder: (context, selectedMap, _) {
+                  if (selectedMap.isEmpty) return const SizedBox.shrink();
+                  final entries = selectedMap.entries.toList();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Divider(),
+                      ),
+                      const Text(
+                        "Set Intensity:",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Column(
+                        children: entries.map((e) {
+                          final symptom = e.key;
+                          return IntensitySelectorItem(
+                            symptom: symptom,
+                            notifier: _selectedSymptoms,
+                            onIntensityChanged: (val) =>
+                                updateIntensity(symptom, val),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class IntensityButton extends StatelessWidget {
-  final Symptom selectedSymptom;
-  final Intensity selectedIntensity;
+class IntensitySelectorRow extends StatelessWidget {
+  final Symptom symptom;
+  final Intensity currentIntensity;
   final ValueChanged<Intensity> onIntensityChanged;
 
-  const IntensityButton({
+  const IntensitySelectorRow({
     super.key,
-    required this.selectedSymptom,
-    required this.selectedIntensity,
+    required this.symptom,
+    required this.currentIntensity,
     required this.onIntensityChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "${selectedSymptom.label}:",
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-
-        Row(
-          spacing: 5,
-          children: Intensity.values.map((i) {
-            final isSelected = selectedIntensity == i;
-
-            return TextButton(
-              style: AppStyle.selectedButtonStyle(
-                colorTheme: ColorTheme.orange,
-                isSelected: isSelected,
-              ),
-              onPressed: () => onIntensityChanged(i),
-              child: Text(i.name.toUpperCase(), style: TextStyle(fontSize: 12)),
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 20),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            symptom.label,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: Intensity.values.map((intensity) {
+              final isSelected = currentIntensity == intensity;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: ChoiceChip(
+                    showCheckmark: false,
+                    label: Center(child: Text(intensity.label)),
+                    selected: isSelected,
+                    onSelected: (_) => onIntensityChanged(intensity),
+                    selectedColor: Colors.orange.shade100,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.orange.shade900 : Colors.black,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -182,22 +207,54 @@ class SymptomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return OutlinedButton(
       onPressed: onPressed,
-      style: AppStyle.selectedButtonStyle(
-        colorTheme: ColorTheme.blue,
-        isSelected: isSelected,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: isSelected ? Colors.blue.shade50 : Colors.white,
+        side: BorderSide(
+          color: isSelected ? Colors.blue : Colors.grey.shade300,
+          width: 1.5,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            symptom.label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ],
+      child: Text(
+        symptom.label,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: isSelected ? Colors.blue.shade700 : Colors.black,
+          fontWeight: FontWeight.normal,
+        ),
       ),
+    );
+  }
+}
+
+class IntensitySelectorItem extends StatelessWidget {
+  final Symptom symptom;
+  final ValueNotifier<Map<Symptom, Intensity>> notifier;
+  final ValueChanged<Intensity> onIntensityChanged;
+
+  const IntensitySelectorItem({
+    super.key,
+    required this.symptom,
+    required this.notifier,
+    required this.onIntensityChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Map<Symptom, Intensity>>(
+      valueListenable: notifier,
+      builder: (context, map, _) {
+        // If the symptom was removed, return empty
+        if (!map.containsKey(symptom)) return const SizedBox.shrink();
+        final intensity = map[symptom]!;
+        return IntensitySelectorRow(
+          symptom: symptom,
+          currentIntensity: intensity,
+          onIntensityChanged: onIntensityChanged,
+        );
+      },
     );
   }
 }
