@@ -73,92 +73,85 @@ class _HomeTabState extends State<HomeTab> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Card(
-            color: Colors.white,
-            child: Column(
-              spacing: 20,
-              children: [
-                Title(),
-                CurrentDate(
-                  averagePeriodLength: averagePeriodLength,
-                  periodLogs: periodLogs,
-                ),
-                SizedBox(),
-                MenstrualCycleRing(
-                  cycleLength: 28,
-                  periodLength: averagePeriodLength,
-                  currentDay: calculateCurrentCycleDay(periodLogs),
-                ),
-                SizedBox(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      PhaseLabel(
-                        label: 'Menstrual Phase',
-                        color: CyclePhase.menstrual.color,
-                      ),
-                      SizedBox(width: 9),
-                      PhaseLabel(
-                        label: "Follicular Phase",
-                        color: CyclePhase.follicular.color,
-                      ),
-                    ],
+    return RefreshIndicator(
+      onRefresh: getAveragePeriodDuration,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Card(
+              color: Colors.white,
+              child: Column(
+                spacing: 20,
+                children: [
+                  Title(),
+                  CurrentDate(
+                    averagePeriodLength: averagePeriodLength,
+                    periodLogs: periodLogs,
                   ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      PhaseLabel(
-                        label: 'Ovulation Phase',
-                        color: CyclePhase.ovulation.color,
-                      ),
-                      SizedBox(width: 10),
-
-                      PhaseLabel(
-                        label: "Luteal Phase",
-                        color: CyclePhase.luteal.color,
-                      ),
-                    ],
+                  SizedBox(),
+                  MenstrualCycleRing(
+                    cycleLength: 28,
+                    periodLength: averagePeriodLength,
+                    currentDay: calculateCurrentCycleDay(periodLogs),
                   ),
-                ),
-                SizedBox(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      LogPeriodButton(
-                        onDataChanged: () => getAveragePeriodDuration(),
-                      ),
-                      LogMoodAndSymptomButton(),
-                    ],
+                  SizedBox(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        PhaseLabel(
+                          label: 'Menstrual Phase',
+                          color: CyclePhase.menstrual.color,
+                        ),
+                        SizedBox(width: 9),
+                        PhaseLabel(
+                          label: "Follicular Phase",
+                          color: CyclePhase.follicular.color,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                // TextButton(
-                //   onPressed: () async {
-                //     await MenstrualLogDatabase.instance.deleteAllPeriodLogs();
-                //     setState(() {
-                //       periodLogs = [];
-                //       averagePeriodLength = 0;
-                //     });
-                //     debugPrint("Deleted");
-                //   },
-                //   child: Text("delete data"),
-                // ),
-                SizedBox(),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        PhaseLabel(
+                          label: 'Ovulation Phase',
+                          color: CyclePhase.ovulation.color,
+                        ),
+                        SizedBox(width: 10),
+
+                        PhaseLabel(
+                          label: "Luteal Phase",
+                          color: CyclePhase.luteal.color,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        LogPeriodButton(
+                          onDataChanged: () => getAveragePeriodDuration(),
+                        ),
+                        LogMoodAndSymptomButton(),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

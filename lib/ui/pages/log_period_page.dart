@@ -4,6 +4,7 @@ import 'package:menstrual_tracking_app/ui/widget/back_app_bar.dart';
 import 'package:menstrual_tracking_app/ui/widget/calandar_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/empty_date_dialog.dart';
 import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
+import 'package:menstrual_tracking_app/utils/loading_animation.dart';
 import 'package:uuid/uuid.dart';
 
 class LogPeriodPage extends StatefulWidget {
@@ -25,7 +26,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     if (startDate == null) {
       showDialog(
         context: context,
-        builder: (BuildContext context) => EmptyDateDialog(),
+        builder: (BuildContext context) => EmptyDateDialog(
+          message: 'Please select a start date',
+          type: DialogType.warning,
+        ),
       );
       return;
     }
@@ -33,7 +37,10 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
     if (endDate == null) {
       showDialog(
         context: context,
-        builder: (BuildContext context) => EmptyDateDialog(),
+        builder: (BuildContext context) => EmptyDateDialog(
+          message: 'Please select an end date',
+          type: DialogType.warning,
+        ),
       );
       return;
     }
@@ -45,6 +52,7 @@ class _LogPeriodPageState extends State<LogPeriodPage> {
       endDate: endDate!,
     );
 
+    // No long-running work here, so return immediately with the log
     Navigator.pop(context, log);
   }
 

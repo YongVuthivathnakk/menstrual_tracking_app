@@ -35,6 +35,13 @@ class MenstrualLogDatabase {
       )
     ''');
 
+    // ensure symptom/mood/note tables have indexes on id for faster deletes/lookups
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_symptom_id ON symptom_logs(id)',
+    );
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_mood_id ON mood_logs(id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_note_id ON note_logs(id)');
+
     await db.execute('''
       CREATE TABLE symptom_logs (
         id TEXT PRIMARY KEY,
@@ -105,6 +112,11 @@ class MenstrualLogDatabase {
     return db.delete('symptom_logs');
   }
 
+  Future<int> deleteSymptomLogById(String id) async {
+    final db = await database;
+    return db.delete('symptom_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ================= MOOD =================
 
   Future<void> insertMoodLog(MoodLog log) async {
@@ -126,6 +138,12 @@ class MenstrualLogDatabase {
     final db = await database;
     return db.delete('mood_logs');
   }
+
+  Future<int> deleteMoodLogById(String id) async {
+    final db = await database;
+    return db.delete('mood_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ================= NOTE =================
 
   Future<void> insertNoteLog(NoteLog log) async {
@@ -146,5 +164,15 @@ class MenstrualLogDatabase {
   Future<int> deleteAllNoteLogs() async {
     final db = await database;
     return db.delete('note_logs');
+  }
+
+  Future<int> deleteNoteLogById(String id) async {
+    final db = await database;
+    return db.delete('note_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deletePeriodLogById(String id) async {
+    final db = await database;
+    return db.delete('period_logs', where: 'id = ?', whereArgs: [id]);
   }
 }

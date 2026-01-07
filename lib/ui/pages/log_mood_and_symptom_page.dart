@@ -64,8 +64,14 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
     );
   }
 
-  void showError() {
-    showDialog(context: context, builder: (_) => EmptyDateDialog());
+  void showError({
+    required String message,
+    DialogType type = DialogType.warning,
+  }) {
+    showDialog(
+      context: context,
+      builder: (_) => EmptyDateDialog(message: message, type: type),
+    );
   }
 
   void showLoading() {
@@ -81,17 +87,26 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
     final newNote = noteController.text.trim();
 
     if (moodList.isEmpty || symptomMap.isEmpty) {
-      showError();
+      showError(
+        message: 'Please select at least one mood and one symptom',
+        type: DialogType.warning,
+      );
       return;
     }
 
     if (newHeading.isNotEmpty && newNote.isEmpty) {
-      showError();
+      showError(
+        message: 'Please enter note text for the heading or remove the heading',
+        type: DialogType.warning,
+      );
       return;
     }
 
     if (newHeading.isEmpty && newNote.isNotEmpty) {
-      showError();
+      showError(
+        message: 'Please add a heading when adding a note',
+        type: DialogType.warning,
+      );
       return;
     }
 
@@ -122,7 +137,10 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
     } catch (e) {
       Navigator.pop(context); // close loading
 
-      showError();
+      showError(
+        message: 'Failed to save data. Please try again.',
+        type: DialogType.error,
+      );
     }
   }
 

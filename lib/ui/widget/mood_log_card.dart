@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:menstrual_tracking_app/model/mood_log.dart';
 import 'package:menstrual_tracking_app/utils/button_style.dart';
 import 'package:menstrual_tracking_app/utils/log_header.dart';
@@ -17,7 +18,8 @@ class MoodLogCard extends StatefulWidget {
   State<MoodLogCard> createState() => _MoodLogCardState();
 }
 
-class _MoodLogCardState extends State<MoodLogCard> {
+class _MoodLogCardState extends State<MoodLogCard>
+    with AutomaticKeepAliveClientMixin {
   late final ValueNotifier<Set<Mood>> _selectedMoods;
 
   @override
@@ -25,6 +27,9 @@ class _MoodLogCardState extends State<MoodLogCard> {
     super.initState();
     _selectedMoods = ValueNotifier(widget.moodList.toSet());
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   void _toggleMood(Mood mood) {
     final current = _selectedMoods.value;
@@ -46,7 +51,19 @@ class _MoodLogCardState extends State<MoodLogCard> {
   }
 
   @override
+  void didUpdateWidget(MoodLogCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the parent passed a different initial mood list, synchronize
+    final oldSet = oldWidget.moodList.toSet();
+    final newSet = widget.moodList.toSet();
+    if (!setEquals(oldSet, newSet)) {
+      _selectedMoods.value = newSet;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // keep state alive when scrolling
     return RepaintBoundary(
       child: Card(
         color: Colors.white,
