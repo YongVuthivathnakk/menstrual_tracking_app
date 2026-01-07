@@ -49,6 +49,61 @@ class _HistoryTabState extends State<HistoryTab> {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
+  Future<void> _confirmDelete({
+    required String id,
+    required String typeLabel,
+    required Future<int> Function(String) deleteFn,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Log'),
+        content: const Text('Are you sure you want to delete this log?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final deleted = await deleteFn(id);
+      if (deleted > 0) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                '${typeLabel[0].toUpperCase()}${typeLabel.substring(1)} log deleted',
+              ),
+            ),
+          );
+        }
+        DataChangeNotifier.instance.notify();
+        if (mounted) _getAllData();
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Nothing was deleted')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete $typeLabel')));
+      }
+    }
+  }
+
   // Computed filtered lists (if _filterDate is null, show all)
   List<MoodLog> get _displayMoodLogs {
     if (_filterDate == null) return moodLogs;
@@ -176,17 +231,21 @@ class _HistoryTabState extends State<HistoryTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          spacing: 20,
-          children: [
-            _buildFilterBar(),
-            _buildMoodSection(),
-            _buildPeriodSection(),
-            _buildSymptomSection(),
-            _buildNoteSection(),
-          ],
+      body: RefreshIndicator(
+        onRefresh: _getAllData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            spacing: 20,
+            children: [
+              _buildFilterBar(),
+              _buildMoodSection(),
+              _buildPeriodSection(),
+              _buildSymptomSection(),
+              _buildNoteSection(),
+            ],
+          ),
         ),
       ),
     );
@@ -208,6 +267,12 @@ class _HistoryTabState extends State<HistoryTab> {
                   emoji: log.moods.first.emoji,
                   title: log.moods.map((m) => m.label).join(", "),
                   subtitle: "Log Date: ${_formatDate(log.logDate)}",
+                  onDelete: () => _confirmDelete(
+                    id: log.id,
+                    typeLabel: "mood",
+                    deleteFn: (id) =>
+                        MenstrualLogDatabase.instance.deleteMoodLogById(id),
+                  ),
                 );
               }).toList(),
             ),
@@ -231,6 +296,12 @@ class _HistoryTabState extends State<HistoryTab> {
                   subtitle1: "Log Date: ${_formatDate(log.logDate)}",
                   dateText:
                       "${_formatDate(log.startDate)} - ${_formatDate(log.endDate)}",
+                  onDelete: () => _confirmDelete(
+                    id: log.id,
+                    typeLabel: "period",
+                    deleteFn: (id) =>
+                        MenstrualLogDatabase.instance.deletePeriodLogById(id),
+                  ),
                 );
               }).toList(),
             ),
@@ -247,6 +318,12 @@ class _HistoryTabState extends State<HistoryTab> {
           title: entry.key.label,
           subtitle1: "Intensity: ${entry.value.label}",
           subtitle2: "Log Date: ${_formatDate(log.logDate)}",
+          onDelete: () => _confirmDelete(
+            id: log.id,
+            typeLabel: "symptom",
+            deleteFn: (id) =>
+                MenstrualLogDatabase.instance.deleteSymptomLogById(id),
+          ),
         );
       });
     }).toList();
@@ -278,6 +355,12 @@ class _HistoryTabState extends State<HistoryTab> {
                     heading: log.heading,
                     note: log.note,
                     dateText: "Log Date: ${_formatDate(log.logDate)}",
+                    onDelete: () => _confirmDelete(
+                      id: log.id,
+                      typeLabel: "note",
+                      deleteFn: (id) =>
+                          MenstrualLogDatabase.instance.deleteNoteLogById(id),
+                    ),
                   );
                 }),
               ],
