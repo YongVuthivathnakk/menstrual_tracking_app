@@ -1,5 +1,3 @@
-
-
 //import 'package:dotted_border/dotted_border.dart';
 //import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,14 +12,14 @@ import 'package:menstrual_tracking_app/ui/widget/log_button.dart';
 import 'package:menstrual_tracking_app/ui/widget/menstrual_cycle_ring.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
-class CycleTrackerCard extends StatefulWidget {
-  const CycleTrackerCard({super.key});
+class HomeTab extends StatefulWidget {
+  const HomeTab({super.key});
 
   @override
-  State<CycleTrackerCard> createState() => _CycleTrackerCardState();
+  State<HomeTab> createState() => _HomeTabState();
 }
 
-class _CycleTrackerCardState extends State<CycleTrackerCard> {
+class _HomeTabState extends State<HomeTab> {
   List<PeriodLog> periodLogs = [];
   int averagePeriodLength = 0;
 
@@ -65,102 +63,102 @@ class _CycleTrackerCardState extends State<CycleTrackerCard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getAveragePeriodDuration();
+    // Defer data loading until after the first frame to avoid blocking
+    // the initial UI rendering.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      getAveragePeriodDuration();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Card(
-        color: Colors.white,
-        child: Column(
-          spacing: 20,
-          children: [
-            Title(),
-            CurrentDate(
-              averagePeriodLength: averagePeriodLength,
-              periodLogs: periodLogs,
-            ),
-            SizedBox(),
-            MenstrualCycleRing(
-              cycleLength: 28,
-              periodLength: averagePeriodLength,
-              currentDay: calculateCurrentCycleDay(periodLogs),
-            ),
-            SizedBox(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  PhaseLabel(
-                    label: 'Menstrual Phase',
-                    color: CyclePhase.menstrual.color,
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Card(
+            color: Colors.white,
+            child: Column(
+              spacing: 20,
+              children: [
+                Title(),
+                CurrentDate(
+                  averagePeriodLength: averagePeriodLength,
+                  periodLogs: periodLogs,
+                ),
+                SizedBox(),
+                MenstrualCycleRing(
+                  cycleLength: 28,
+                  periodLength: averagePeriodLength,
+                  currentDay: calculateCurrentCycleDay(periodLogs),
+                ),
+                SizedBox(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      PhaseLabel(
+                        label: 'Menstrual Phase',
+                        color: CyclePhase.menstrual.color,
+                      ),
+                      SizedBox(width: 9),
+                      PhaseLabel(
+                        label: "Follicular Phase",
+                        color: CyclePhase.follicular.color,
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 9),
-                  PhaseLabel(
-                    label: "Follicular Phase",
-                    color: CyclePhase.follicular.color,
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  PhaseLabel(
-                    label: 'Ovulation Phase',
-                    color: CyclePhase.ovulation.color,
-                  ),
-                  SizedBox(width: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      PhaseLabel(
+                        label: 'Ovulation Phase',
+                        color: CyclePhase.ovulation.color,
+                      ),
+                      SizedBox(width: 10),
 
-                  PhaseLabel(
-                    label: "Luteal Phase",
-                    color: CyclePhase.luteal.color,
+                      PhaseLabel(
+                        label: "Luteal Phase",
+                        color: CyclePhase.luteal.color,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            SizedBox(),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  LogPeriodButton(
-                    onDataChanged: () => getAveragePeriodDuration(),
+                ),
+                SizedBox(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      LogPeriodButton(
+                        onDataChanged: () => getAveragePeriodDuration(),
+                      ),
+                      LogMoodAndSymptomButton(),
+                    ],
                   ),
-                  LogMoodAndSymptomButton(),
-                ],
-              ),
-            ),
+                ),
 
-            TextButton(
-              onPressed: () async {
-                await MenstrualLogDatabase.instance.deleteAllPeriodLogs();
-                setState(() {
-                  periodLogs = [];
-                  averagePeriodLength = 0;
-                });
-                debugPrint("Deleted");
-              },
-              child: Text("delete data"),
+                // TextButton(
+                //   onPressed: () async {
+                //     await MenstrualLogDatabase.instance.deleteAllPeriodLogs();
+                //     setState(() {
+                //       periodLogs = [];
+                //       averagePeriodLength = 0;
+                //     });
+                //     debugPrint("Deleted");
+                //   },
+                //   child: Text("delete data"),
+                // ),
+                SizedBox(),
+              ],
             ),
-
-            TextButton(
-              onPressed: () {
-                getAveragePeriodDuration();
-              },
-              child: Text("reload"),
-            ),
-            SizedBox(),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -260,6 +258,8 @@ class _CurrentDateState extends State<CurrentDate> {
     currentWeekDate = DateTime.now();
   }
 
+  static final DateFormat _dayFormat = DateFormat('d');
+
   List<String> days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   DateTime get monday =>
@@ -297,7 +297,7 @@ class _CurrentDateState extends State<CurrentDate> {
       String dayName = days[index];
 
       // Get the current day number eg. "1", "2" ...
-      String dayNumber = DateFormat('d').format(dayDate);
+      String dayNumber = _dayFormat.format(dayDate);
 
       bool isToday =
           dayDate.day == DateTime.now().day &&
@@ -340,6 +340,8 @@ class _CurrentDateState extends State<CurrentDate> {
                     : null,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
         ],
       );
     });

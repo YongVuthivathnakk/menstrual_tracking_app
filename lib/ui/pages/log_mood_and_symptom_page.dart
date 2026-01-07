@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:menstrual_tracking_app/model/mood_log.dart';
 import 'package:menstrual_tracking_app/model/note_log.dart';
@@ -11,6 +9,8 @@ import 'package:menstrual_tracking_app/ui/widget/mood_log_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/note_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
 import 'package:menstrual_tracking_app/ui/widget/symptom_log_card.dart';
+import 'package:menstrual_tracking_app/services/data_change_notifier.dart';
+import 'package:menstrual_tracking_app/utils/loading_animation.dart';
 import 'package:uuid/uuid.dart';
 
 class LogMoodAndSymptomPage extends StatefulWidget {
@@ -59,8 +59,8 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
     return NoteLog(
       id: Uuid().v4(),
       logDate: DateTime.now(),
-      note: headingController.text.trim(),
-      heading: noteController.text.trim(),
+      heading: headingController.text.trim(),
+      note: noteController.text.trim(),
     );
   }
 
@@ -68,7 +68,15 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
     showDialog(context: context, builder: (_) => EmptyDateDialog());
   }
 
-  void logData() {
+  void showLoading() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: LoadingAnimation(size: 80)),
+    );
+  }
+
+  void logData() async {
     final newHeading = headingController.text.trim();
     final newNote = noteController.text.trim();
 
@@ -87,19 +95,35 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
       return;
     }
 
-    if (newHeading.isNotEmpty && newNote.isNotEmpty) {
-      final newNote = getNotes();
-      // await MenstrualLogDatabase.instance.insertNoteLog(getNotes());
+    // Show a simple non-dismissible loading dialog while we save the data
+
+    showLoading();
+
+    try {
+      final futures = <Future>[];
+
+      if (newHeading.isNotEmpty && newNote.isNotEmpty) {
+        final note = getNotes();
+        futures.add(MenstrualLogDatabase.instance.insertNoteLog(note));
+      }
+
+      final newMood = getMood();
+      final newSymptoms = getSymptom();
+      futures.add(MenstrualLogDatabase.instance.insertMoodLog(newMood));
+      futures.add(MenstrualLogDatabase.instance.insertSymptomLog(newSymptoms));
+
+      // Run DB writes concurrently for speed
+      await Future.wait(futures);
+
+      // Notify global listeners that data has changed so HistoryTab can refresh.
+      DataChangeNotifier.instance.notify();
+      Navigator.pop(context);
+      Navigator.pop(context, true);
+    } catch (e) {
+      Navigator.pop(context); // close loading
+
+      showError();
     }
-
-    final newMood = getMood();
-    final newSymptoms = getSymptom();
-    // await MenstrualLogDatabase.instance.insertMoodLog(getMood());
-    // await MenstrualLogDatabase.instance.insertSymptomLog(getSymptom());
-
-    debugPrint("Submitx");
-
-    // Navigator.pop(context);
   }
 
   @override
@@ -114,9 +138,10 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
             child: MoodLogCard(
               moodList: moodList,
               onMoodChanged: (moods) {
-                setState(() {
-                  moodList = moods;
-                });
+                // Don't call setState here: MoodLogCard updates itself via ValueNotifier
+                // Assign to the local variable so we can use it when saving without
+                // forcing a rebuild of the entire page on every tap.
+                moodList = moods;
               },
             ),
           ),
@@ -126,9 +151,8 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
             child: SymptomLogCard(
               symptoms: symptomMap,
               onSymptomChanged: (symtoms) {
-                setState(() {
-                  symptomMap = symtoms;
-                });
+                // Avoid rebuilding the whole page for each change — keep local update
+                symptomMap = symtoms;
               },
             ),
           ),

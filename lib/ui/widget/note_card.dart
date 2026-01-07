@@ -19,30 +19,35 @@ class NoteCard extends StatefulWidget {
 class _NoteCardState extends State<NoteCard> {
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 20,
-          children: [
-            LogHeader(
-              title: "Note",
-              description: "Add any additional note (Optional):",
-            ),
+    return RepaintBoundary(
+      child: Card(
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 20,
+            children: [
+              LogHeader(
+                title: "Note",
+                description: "Add any additional note (Optional):",
+              ),
 
-            NoteInputField(
-              hint: "Heading",
-              textController: widget.headingController,
-            ),
-            NoteInputField(
-              hint: "Tell us about your day...",
-              maxLines: 20,
-              minLines: 5,
-              textController: widget.noteController,
-            ),
-          ],
+              NoteInputField(
+                hint: "Heading",
+                textController: widget.headingController,
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 300),
+                child: NoteInputField(
+                  hint: "Tell us about your day...",
+                  maxLines: 20,
+                  minLines: 5,
+                  textController: widget.noteController,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

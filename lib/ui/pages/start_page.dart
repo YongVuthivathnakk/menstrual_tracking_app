@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 
 class StartPage extends StatelessWidget {
@@ -14,9 +13,7 @@ class StartPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 200,
           children: [
-            Center(
-              child: Image.asset('assets/images/Logo.png'),
-            ),
+            Center(child: Image.asset('assets/images/Logo.png')),
             SizedBox(
               width: 250,
               height: 50,
@@ -27,20 +24,15 @@ class StartPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: (){
+                onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>
-                      HomePage(),
-                    ),
+                    MaterialPageRoute(builder: (context) => HomePage()),
                   );
-                }, 
+                },
                 child: Text(
                   "Get Started",
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
             ),
@@ -50,3 +42,6 @@ class StartPage extends StatelessWidget {
     );
   }
 }
+
+
+// Logic Show t

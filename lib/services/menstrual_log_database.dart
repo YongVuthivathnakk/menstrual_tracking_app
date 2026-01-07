@@ -100,6 +100,11 @@ class MenstrualLogDatabase {
     return result.map(SymptomLog.fromMap).toList();
   }
 
+  Future<int> deleteAllSymptomLogs() async {
+    final db = await database;
+    return db.delete('symptom_logs');
+  }
+
   // ================= MOOD =================
 
   Future<void> insertMoodLog(MoodLog log) async {
@@ -117,6 +122,10 @@ class MenstrualLogDatabase {
     return result.map(MoodLog.fromMap).toList();
   }
 
+  Future<int> deleteAllMoodLogs() async {
+    final db = await database;
+    return db.delete('mood_logs');
+  }
   // ================= NOTE =================
 
   Future<void> insertNoteLog(NoteLog log) async {
@@ -132,5 +141,10 @@ class MenstrualLogDatabase {
     final db = await database;
     final result = await db.query('note_logs', orderBy: 'logDate DESC');
     return result.map(NoteLog.fromMap).toList();
+  }
+
+  Future<int> deleteAllNoteLogs() async {
+    final db = await database;
+    return db.delete('note_logs');
   }
 }
