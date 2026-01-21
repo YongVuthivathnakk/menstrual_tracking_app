@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../model/mood_log.dart';
-import '../../model/note_log.dart';
+//import '../../model/note_log.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final moodLog = MoodLog(id: "1", mood: [Mood.happy]);
+    final moodLog = (id: "1", moods: [Mood.happy]);
     final moodDate = DateTime(2025, 12, 18);
     final periodDate = DateTime(2025, 11, 2);
     final symptomTitle = "Back Pain";
     final symptomIntensity = "Intensity: Moderate";
     final symptomDate = DateTime(2025, 12, 18);
     final noteDate = DateTime(2025, 12, 20);
-    final noteLog = NoteLog(
+    final noteLog = (
       id: "1",
       logDate: _formatDate(noteDate),
       note: "Need to buy a heating pad.",
@@ -28,8 +28,8 @@ class HistoryPage extends StatelessWidget {
             title: "Mood Logs",
             onTapFilter: () => debugPrint("Mood filter tapped"),
             child: MoodLogRow(
-              emoji: moodLog.mood.first.emoji,
-              title: moodLog.mood.first.label,
+              emoji: moodLog.moods.first.emoji,
+              title: moodLog.moods.first.label,
               subtitle: _formatDate(moodDate),
             ),
           ),

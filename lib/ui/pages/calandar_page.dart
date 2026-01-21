@@ -19,11 +19,11 @@ class _CalandarPageState extends State<CalandarPage> {
         child: Card(
           color: Colors.white,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 40),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              spacing: 40,
+              spacing: 20,
               children: [
                 Text(
                   "Calandar",
@@ -34,8 +34,8 @@ class _CalandarPageState extends State<CalandarPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   spacing: 20,
                   children: [
-                    Label(text: 'Menstrual', color: Color(0xff9D1B1B)),
-                    Label(text: 'Ovulation', color: Color(0xffBBDCE5)),
+                    Label(text: 'Today', color: Color(0xffBBDCE5)),
+                    Label(text: 'Period', color: Color(0xffFFC0CB)),
                   ],
                 ),
               ],

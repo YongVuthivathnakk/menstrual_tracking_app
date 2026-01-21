@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/model/period_log.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_mood_and_symptom_page.dart';
 import 'package:menstrual_tracking_app/ui/pages/log_period_page.dart';
+import 'package:menstrual_tracking_app/services/data_change_notifier.dart';
 
 // Log Period Button
 class LogPeriodButton extends StatefulWidget {
-  const LogPeriodButton({super.key});
+  final VoidCallback onDataChanged;
+  const LogPeriodButton({super.key, required this.onDataChanged});
 
   @override
   State<LogPeriodButton> createState() => _LogPeriodButtonState();
@@ -13,25 +17,32 @@ class LogPeriodButton extends StatefulWidget {
 class _LogPeriodButtonState extends State<LogPeriodButton> {
   @override
   Widget build(BuildContext context) {
-    void onLog() {
-      Navigator.push(
+    void onLog() async {
+      PeriodLog? item = await Navigator.push(
         context,
         MaterialPageRoute(builder: (BuildContext context) => LogPeriodPage()),
       );
+
+      if (item != null) {
+        await MenstrualLogDatabase.instance.insertPeriodLog(item);
+        widget.onDataChanged();
+        // Notify History and other listeners
+        DataChangeNotifier.instance.notify();
+      }
     }
 
     return TextButton(
       onPressed: onLog,
       style: TextButton.styleFrom(
-        backgroundColor: Color(0xffE39895),
-        minimumSize: const Size(200, 50),
+        backgroundColor: const Color(0xffE39895),
+        minimumSize: const Size(120, 40),
       ),
-      child: Text(
+      child: const Text(
         "Log Period",
         style: TextStyle(
           color: Colors.white,
-          fontSize: 14,
-          fontWeight: FontWeight(600),
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -50,27 +61,32 @@ class LogMoodAndSymptomButton extends StatefulWidget {
 class _LogMoodAndSymptomButtonState extends State<LogMoodAndSymptomButton> {
   @override
   Widget build(BuildContext context) {
-    void onLog() {
-      Navigator.push(
+    void onLog() async {
+      final result = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (BuildContext context) => LogMoodAndSymptomPage(),
         ),
       );
+
+      if (result == true) {
+        // Notify History and other listeners
+        DataChangeNotifier.instance.notify();
+      }
     }
 
     return TextButton(
       onPressed: onLog,
       style: TextButton.styleFrom(
-        backgroundColor: Color(0xff3396D3),
-        minimumSize: const Size(200, 50),
+        backgroundColor: const Color(0xff3396D3),
+        minimumSize: const Size(120, 40),
       ),
       child: Text(
-        "Log Mood & Symptoms",
+        "Log Symptoms",
         style: TextStyle(
-          fontSize: 14,
+          fontSize: 12,
           color: Colors.white,
-          fontWeight: FontWeight(600),
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
