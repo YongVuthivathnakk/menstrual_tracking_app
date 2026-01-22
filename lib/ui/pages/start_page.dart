@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
+import 'package:menstrual_tracking_app/ui/pages/form_page.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -27,7 +27,7 @@ class StartPage extends StatelessWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
+                    MaterialPageRoute(builder: (context) => FormPage()),
                   );
                 },
                 child: Text(
@@ -42,6 +42,3 @@ class StartPage extends StatelessWidget {
     );
   }
 }
-
-
-// Logic Show t

@@ -27,8 +27,17 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
-    await _predictionService.loadPeriodLogs();
+  Future<void> _getAveragePeriodDuration() async {
+    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
+
+    if (logs.isEmpty) return;
+
+    int totalBleedingDays = 0;
+    for (final log in logs) {
+      // Adding 1 ensures that if start and end are the same day, it counts as 1 day
+      totalBleedingDays += log.endDate.difference(log.startDate).inDays + 1;
+    }
+
     setState(() {
       _isLoading = false;
     });

@@ -29,7 +29,7 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    // implement initState
     super.initState();
     headingController = TextEditingController();
     noteController = TextEditingController();
@@ -37,7 +37,7 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    // implement dispose
     headingController.dispose();
     noteController.dispose();
     super.dispose();
@@ -132,9 +132,12 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
 
       // Notify global listeners that data has changed so HistoryTab can refresh.
       DataChangeNotifier.instance.notify();
+      // ignore: use_build_context_synchronously
       Navigator.pop(context);
+      // ignore: use_build_context_synchronously
       Navigator.pop(context, true);
     } catch (e) {
+      // ignore: use_build_context_synchronously
       Navigator.pop(context); // close loading
 
       showError(

@@ -211,7 +211,7 @@ class _HistoryTabState extends State<HistoryTab> {
     final newMoodLogs = await MenstrualLogDatabase.instance.getMoodLogs();
     final newSymptomLogs = await MenstrualLogDatabase.instance.getSymptomLogs();
     final newPeriodLogs = await MenstrualLogDatabase.instance
-        .getAllPeriodLogs();
+        .getPeriodLogs();
     final newNoteLogs = await MenstrualLogDatabase.instance.getNoteLogs();
 
     if (!mounted) return;

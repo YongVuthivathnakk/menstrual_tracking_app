@@ -11,6 +11,7 @@ class CycleRingPainter extends CustomPainter {
 
   CycleRingPainter({required this.math, this.strokeWidth = 12})
     : _backgroundPaint = Paint()
+        // ignore: deprecated_member_use
         ..color = Colors.grey.withOpacity(0.2)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth,
