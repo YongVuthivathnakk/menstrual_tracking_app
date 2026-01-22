@@ -113,7 +113,6 @@ class _HomeTabState extends State<HomeTab> {
                       ],
                     ),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
@@ -144,7 +143,6 @@ class _HomeTabState extends State<HomeTab> {
                       ],
                     ),
                   ),
-
                   SizedBox(),
                 ],
               ),

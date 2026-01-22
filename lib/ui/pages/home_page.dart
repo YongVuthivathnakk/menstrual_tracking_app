@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 //import 'package:flutter_svg/flutter_svg.dart';
 import 'package:menstrual_tracking_app/ui/tabs/history_tab.dart';
 import 'package:menstrual_tracking_app/ui/tabs/home_tab.dart';
+import 'package:menstrual_tracking_app/ui/tabs/test.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // return TestPage();
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,

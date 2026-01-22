@@ -136,7 +136,7 @@ class CycleHeart extends StatelessWidget {
       child: Transform.translate(
         offset: Offset(radius, 0),
         child: Transform.rotate(
-          angle: -angle, // 👈 counter rotation (keeps icon straight)
+          angle: -angle, // counter rotation (keeps the heart icon straight)
           child: Container(
             width: 28,
             height: 28,

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:menstrual_tracking_app/model/period_log.dart';
-import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
+import 'package:menstrual_tracking_app/services/cycle_prediction_service.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
 enum CalendarType { start, end }
@@ -15,20 +14,17 @@ class DefaultCalandar extends StatefulWidget {
 }
 
 class _DefaultCalandarState extends State<DefaultCalandar> {
+  final CalendarPredictionService _predictionService =
+      CalendarPredictionService();
+
   DateTime currentMonth = DateTime.now();
-  int averagePeriodLength = 0;
-  List<PeriodLog> periodLogs = [];
   List<String> fullWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  bool _isLoading = true;
 
-  List<DateTime> _daysInMonth(DateTime month) {
-    final firstDayOfMonth = DateTime(month.year, month.month, 1);
-    final startOfCalendar = firstDayOfMonth.subtract(
-      Duration(days: firstDayOfMonth.weekday % 7),
-    );
-
-    return List.generate(42, (index) {
-      return startOfCalendar.add(Duration(days: index));
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
   Future<void> _getAveragePeriodDuration() async {
@@ -43,45 +39,20 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
     }
 
     setState(() {
-      periodLogs = logs;
-      averagePeriodLength = (totalBleedingDays / logs.length).round();
+      _isLoading = false;
     });
   }
 
-  DateTime? getEarliestStartDate() {
-    if (periodLogs.isEmpty) return null;
-
-    // Find the log with the oldest (minimum) start date
-    return periodLogs
-        .reduce((a, b) => a.startDate.isBefore(b.startDate) ? a : b)
-        .startDate;
-  }
-
-  bool _isDatePredicted(DateTime date) {
-    final earliestStart = getEarliestStartDate();
-    if (earliestStart == null) return false;
-
-    // 1. Normalize dates to ignore time (midnight)
-    final anchor = DateTime(
-      earliestStart.year,
-      earliestStart.month,
-      earliestStart.day,
+  List<DateTime> _daysInMonth(DateTime month) {
+    final firstDayOfMonth = DateTime(month.year, month.month, 1);
+    final startOfCalendar = firstDayOfMonth.subtract(
+      Duration(days: firstDayOfMonth.weekday % 7),
     );
-    final checkDate = DateTime(date.year, date.month, date.day);
 
-    // 2. We don't predict for dates before the first log
-    if (checkDate.isBefore(anchor)) return false;
-
-    // 3. Calculate total days since the very first start date
-    final totalDaysSinceStart = checkDate.difference(anchor).inDays;
-
-    // 4. Use modulo 28 to see where this day falls in the repeating cycle
-    final cycleDay = totalDaysSinceStart % 28;
-
-    // 5. If the day is between 0 and (averageLength or 5), it's a predicted period day
-    int window = averagePeriodLength > 0 ? averagePeriodLength : 5;
-
-    return cycleDay >= 0 && cycleDay < window;
+    return List.generate(
+      42,
+      (index) => startOfCalendar.add(Duration(days: index)),
+    );
   }
 
   void onNext() {
@@ -90,21 +61,18 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
     });
   }
 
-  void onPervious() {
+  void onPrevious() {
     setState(() {
       currentMonth = DateTime(currentMonth.year, currentMonth.month - 1);
     });
   }
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    _getAveragePeriodDuration();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final today = DateTime.now();
     final days = _daysInMonth(currentMonth);
 
@@ -117,16 +85,12 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
       ),
       child: Column(
         children: [
-          /// HEADER
           Header(
             currentMonth: currentMonth,
             onNext: onNext,
-            onPervious: onPervious,
+            onPervious: onPrevious,
           ),
-
           const SizedBox(height: 12),
-
-          /// WEEK DAYS
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: fullWeek
@@ -141,10 +105,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
                 )
                 .toList(),
           ),
-
           const SizedBox(height: 12),
-
-          /// DAYS GRID
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -162,7 +123,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
                   day.year == today.year;
               final isCurrentMonth = day.month == currentMonth.month;
 
-              final isPredicted = _isDatePredicted(day);
+              final isPredicted = _predictionService.isDatePredicted(day);
 
               return Center(
                 child: Container(
@@ -200,7 +161,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
   }
 }
 
-class Header extends StatefulWidget {
+class Header extends StatelessWidget {
   const Header({
     super.key,
     required this.currentMonth,
@@ -212,11 +173,6 @@ class Header extends StatefulWidget {
 
   final DateTime currentMonth;
 
-  @override
-  State<Header> createState() => _HeaderState();
-}
-
-class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -233,10 +189,10 @@ class _HeaderState extends State<Header> {
             ),
           ),
           icon: SvgPicture.asset(SvgIcons.chevronLeft, width: 18, height: 18),
-          onPressed: widget.onPervious,
+          onPressed: onPervious,
         ),
         Text(
-          DateFormat('MMMM yyyy').format(widget.currentMonth),
+          DateFormat('MMMM yyyy').format(currentMonth),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         IconButton(
@@ -250,7 +206,7 @@ class _HeaderState extends State<Header> {
             ),
           ),
           icon: SvgPicture.asset(SvgIcons.chevronRight, height: 18, width: 18),
-          onPressed: widget.onNext,
+          onPressed: onNext,
         ),
       ],
     );
@@ -277,14 +233,13 @@ class SelectableCalendar extends StatefulWidget {
 
 class _SelectableCalendarState extends State<SelectableCalendar> {
   late DateTime _currentMonth;
+  final List<String> fullWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   @override
   void initState() {
     super.initState();
     _currentMonth = DateTime.now();
   }
-
-  final List<String> fullWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   List<DateTime> _daysInMonth(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
@@ -367,6 +322,7 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
 
               final isCurrentMonth = day.month == _currentMonth.month;
 
+              // User selected dates
               final isStartSelected =
                   widget.startDate != null &&
                   day.year == widget.startDate!.year &&
@@ -379,17 +335,38 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
                   day.month == widget.endDate!.month &&
                   day.day == widget.endDate!.day;
 
+              // Range selection for end date
               final rangeEnd = widget.startDate?.add(const Duration(days: 6));
-
               final isInRange =
                   widget.startDate != null &&
                   !day.isBefore(widget.startDate!) &&
-                  !day.isAfter(rangeEnd!);
+                  !day.isAfter(rangeEnd ?? widget.startDate!);
 
               bool isDisabled = false;
-
               if (widget.type == CalendarType.end) {
                 isDisabled = widget.startDate == null || !isInRange;
+              }
+
+              // Decide cell color
+              Color cellColor;
+              if (isToday) {
+                cellColor = const Color(0xff3396D3);
+              } else if (isStartSelected || isEndSelected) {
+                cellColor = const Color(0xffE39895);
+              } else if (isInRange && widget.type == CalendarType.end) {
+                cellColor = const Color.fromARGB(255, 255, 227, 226);
+              } else {
+                cellColor = Colors.transparent;
+              }
+
+              // Decide text color
+              Color textColor;
+              if (isToday || isStartSelected || isEndSelected) {
+                textColor = Colors.white;
+              } else if (!isCurrentMonth || isDisabled) {
+                textColor = Colors.grey.shade300;
+              } else {
+                textColor = Colors.black;
               }
 
               return GestureDetector(
@@ -398,28 +375,18 @@ class _SelectableCalendarState extends State<SelectableCalendar> {
                     : null,
                 child: Center(
                   child: Container(
+                    width: 38,
+                    height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isToday
-                          ? const Color(0xff3396D3)
-                          : isStartSelected || isEndSelected
-                          ? const Color(0xffE39895)
-                          : isInRange && widget.type == CalendarType.end
-                          ? const Color.fromARGB(255, 255, 227, 226)
-                          : Colors.transparent,
+                      color: cellColor,
                     ),
                     child: Text(
                       '${day.day}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: isToday
-                            ? Colors.white
-                            : (!isCurrentMonth || isDisabled)
-                            ? Colors.grey.shade300
-                            : (isStartSelected || isEndSelected)
-                            ? Colors.white
-                            : Colors.black,
+                        color: textColor,
                       ),
                     ),
                   ),
