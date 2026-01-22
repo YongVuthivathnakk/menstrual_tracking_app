@@ -47,6 +47,7 @@ class EmptyDateDialog extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 20,
+                  // ignore: deprecated_member_use
                   backgroundColor: _color.withOpacity(0.15),
                   child: Icon(_icon, color: _color),
                 ),

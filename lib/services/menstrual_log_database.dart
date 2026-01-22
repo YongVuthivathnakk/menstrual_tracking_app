@@ -2,6 +2,7 @@ import 'package:menstrual_tracking_app/model/mood_log.dart';
 import 'package:menstrual_tracking_app/model/note_log.dart';
 import 'package:menstrual_tracking_app/model/period_log.dart';
 import 'package:menstrual_tracking_app/model/symptom_log.dart';
+import 'package:menstrual_tracking_app/model/user_profile.dart'; // ADD THIS
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,15 +14,15 @@ class MenstrualLogDatabase {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('menstrual.db');
-    return _database!;
+    _database = await _initDB('menstrual. db');
+    return _database! ;
   }
 
   Future<Database> _initDB(String fileName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, fileName);
 
-    return openDatabase(path, version: 2, onCreate: _createDB);
+    return openDatabase(path, version: 3, onCreate: _createDB, onUpgrade: _onUpgrade); // UPDATE VERSION TO 3
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -35,7 +36,6 @@ class MenstrualLogDatabase {
       )
     ''');
 
-    // ensure symptom/mood/note tables have indexes on id for faster deletes/lookups
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_symptom_id ON symptom_logs(id)',
     );
@@ -66,6 +66,69 @@ class MenstrualLogDatabase {
         note TEXT NOT NULL
       )
     ''');
+
+    // ADD USER PROFILE TABLE
+    await db.execute('''
+      CREATE TABLE user_profile (
+        id TEXT PRIMARY KEY,
+        lastPeriodDate TEXT NOT NULL,
+        periodDuration INTEGER NOT NULL,
+        cycleLength INTEGER NOT NULL,
+        isRegular INTEGER NOT NULL,
+        age INTEGER NOT NULL,
+        createdAt TEXT NOT NULL
+      )
+    ''');
+  }
+
+  // ADD UPGRADE METHOD FOR EXISTING DATABASES
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS user_profile (
+          id TEXT PRIMARY KEY,
+          lastPeriodDate TEXT NOT NULL,
+          periodDuration INTEGER NOT NULL,
+          cycleLength INTEGER NOT NULL,
+          isRegular INTEGER NOT NULL,
+          age INTEGER NOT NULL,
+          createdAt TEXT NOT NULL
+        )
+      ''');
+    }
+  }
+
+  // ================= USER PROFILE =================
+
+  Future<void> insertUserProfile(UserProfile profile) async {
+    final db = await database;
+    await db.insert(
+      'user_profile',
+      profile.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<UserProfile?> getUserProfile() async {
+    final db = await database;
+    final result = await db.query('user_profile', limit: 1);
+    if (result.isEmpty) return null;
+    return UserProfile.fromMap(result.first);
+  }
+
+  Future<int> deleteUserProfile() async {
+    final db = await database;
+    return db.delete('user_profile');
+  }
+
+  Future<void> updateUserProfile(UserProfile profile) async {
+    final db = await database;
+    await db. update(
+      'user_profile',
+      profile.toMap(),
+      where: 'id = ?',
+      whereArgs: [profile.id],
+    );
   }
 
   // ================= PERIOD =================
@@ -79,9 +142,9 @@ class MenstrualLogDatabase {
     );
   }
 
-  Future<List<PeriodLog>> getAllPeriodLogs() async {
+  Future<List<PeriodLog>> getPeriodLogs() async {
     final db = await database;
-    final result = await db.query('period_logs', orderBy: 'startDate DESC');
+    final result = await db.query('period_logs', orderBy: 'logDate DESC');
     return result.map(PeriodLog.fromMap).toList();
   }
 
@@ -90,13 +153,18 @@ class MenstrualLogDatabase {
     return db.delete('period_logs');
   }
 
+  Future<int> deletePeriodLogById(String id) async {
+    final db = await database;
+    return db.delete('period_logs', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ================= SYMPTOM =================
 
   Future<void> insertSymptomLog(SymptomLog log) async {
     final db = await database;
     await db.insert(
       'symptom_logs',
-      log.toMap(),
+      log. toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -130,7 +198,7 @@ class MenstrualLogDatabase {
 
   Future<List<MoodLog>> getMoodLogs() async {
     final db = await database;
-    final result = await db.query('mood_logs', orderBy: 'logDate DESC');
+    final result = await db. query('mood_logs', orderBy: 'logDate DESC');
     return result.map(MoodLog.fromMap).toList();
   }
 
@@ -150,7 +218,7 @@ class MenstrualLogDatabase {
     final db = await database;
     await db.insert(
       'note_logs',
-      log.toMap(),
+      log. toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -158,7 +226,7 @@ class MenstrualLogDatabase {
   Future<List<NoteLog>> getNoteLogs() async {
     final db = await database;
     final result = await db.query('note_logs', orderBy: 'logDate DESC');
-    return result.map(NoteLog.fromMap).toList();
+    return result.map(NoteLog. fromMap).toList();
   }
 
   Future<int> deleteAllNoteLogs() async {
@@ -168,11 +236,11 @@ class MenstrualLogDatabase {
 
   Future<int> deleteNoteLogById(String id) async {
     final db = await database;
-    return db.delete('note_logs', where: 'id = ?', whereArgs: [id]);
+    return db.delete('note_logs', where: 'id = ? ', whereArgs: [id]);
   }
 
-  Future<int> deletePeriodLogById(String id) async {
+  Future<void> close() async {
     final db = await database;
-    return db.delete('period_logs', where: 'id = ?', whereArgs: [id]);
+    db.close();
   }
 }

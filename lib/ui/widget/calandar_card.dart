@@ -32,7 +32,7 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
   }
 
   Future<void> _getAveragePeriodDuration() async {
-    final logs = await MenstrualLogDatabase.instance.getAllPeriodLogs();
+    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
 
     if (logs.isEmpty) return;
 

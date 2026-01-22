@@ -4,7 +4,7 @@ import 'package:menstrual_tracking_app/ui/widget/back_app_bar.dart';
 import 'package:menstrual_tracking_app/ui/widget/calandar_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/empty_date_dialog.dart';
 import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
-import 'package:menstrual_tracking_app/utils/loading_animation.dart';
+//import 'package:menstrual_tracking_app/utils/loading_animation.dart';
 import 'package:uuid/uuid.dart';
 
 class LogPeriodPage extends StatefulWidget {

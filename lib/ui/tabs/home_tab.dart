@@ -45,7 +45,7 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   Future<void> getAveragePeriodDuration() async {
-    final logs = await MenstrualLogDatabase.instance.getAllPeriodLogs();
+    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
 
     if (logs.isEmpty) return;
 
