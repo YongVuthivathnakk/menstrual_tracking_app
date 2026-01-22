@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 //import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/pages/start_page.dart';
+import 'package:menstrual_tracking_app/ui/theme_data.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,14 +16,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flow App',
       debugShowCheckedModeBanner: false,
+      showPerformanceOverlay: true,
       theme: ThemeData(
         fontFamily: "Nunito",
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xff9A0002),
+          seedColor: AppTheme.primary,
           brightness: Brightness.light,
           surface: Colors.white,
         ),
-        scaffoldBackgroundColor: const Color(0xffFAE5E4),
+        scaffoldBackgroundColor: AppTheme.backgroundColor,
       ),
       home: const StartPage(),
     );
