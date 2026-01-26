@@ -25,10 +25,13 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Center(
-          child: _currentTab == PageTab.homeTab
-              ? Image.asset("assets/images/Flow.png")
-              : Image.asset("assets/images/History.png"),
+        title: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          child: Center(
+            child: _currentTab == PageTab.homeTab
+                ? Image.asset("assets/images/voat.png", width: 60)
+                : Image.asset("assets/images/History.png"),
+          ),
         ),
       ),
       body: IndexedStack(
