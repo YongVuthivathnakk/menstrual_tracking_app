@@ -9,7 +9,6 @@ import 'package:menstrual_tracking_app/ui/widget/mood_log_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/note_card.dart';
 import 'package:menstrual_tracking_app/ui/widget/submit_button.dart';
 import 'package:menstrual_tracking_app/ui/widget/symptom_log_card.dart';
-import 'package:menstrual_tracking_app/services/data_change_notifier.dart';
 import 'package:menstrual_tracking_app/utils/loading_animation.dart';
 import 'package:uuid/uuid.dart';
 
@@ -130,8 +129,6 @@ class _LogMoodAndSymptomPageState extends State<LogMoodAndSymptomPage> {
       // Run DB writes concurrently for speed
       await Future.wait(futures);
 
-      // Notify global listeners that data has changed so HistoryTab can refresh.
-      DataChangeNotifier.instance.notify();
       // ignore: use_build_context_synchronously
       Navigator.pop(context);
       // ignore: use_build_context_synchronously

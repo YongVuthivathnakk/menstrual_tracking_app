@@ -28,31 +28,32 @@ class _MenstrualCycleRingState extends State<MenstrualCycleRing> {
     );
 
     final phase = math.currentPhase;
+    final nextPhase = math.nextPhaseInfo;
     final angle =
         (widget.currentDay / widget.cycleLength) * 2 * 3.141592653589793 -
         (3.141592653589793 / 2);
 
     return SizedBox(
-      width: 225,
-      height: 225,
+      width: 250,
+      height: 250,
       child: RepaintBoundary(
         child: Stack(
           alignment: Alignment.center,
           children: [
             CustomPaint(
-              size: const Size(225, 225),
+              size: const Size(250, 250),
               painter: CycleRingPainter(math: math),
             ),
             CycleCenterText(
               periodLength: widget.periodLength,
               day: widget.currentDay,
               phase: phase.label, // Accessed from enum
-              ovulationInfo: phase.info, // Accessed from enum
+              ovulationInfo: nextPhase, // Accessed from enum
             ),
             widget.periodLength != 0
                 ? CycleHeart(
                     angle: angle,
-                    radius: 110,
+                    radius: 125,
                     color: phase.color, // Accessed from enum
                   )
                 : SizedBox(),
@@ -106,7 +107,7 @@ class _CycleCenterTextState extends State<CycleCenterText> {
         Text(
           widget.periodLength != 0 ? widget.ovulationInfo : "NO DATA",
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 12,
             letterSpacing: 1.2,
             color: Colors.blue,
             fontWeight: FontWeight.w600,

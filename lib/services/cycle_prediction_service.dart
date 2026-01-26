@@ -7,7 +7,7 @@ class CalendarPredictionService {
   PeriodCalculator? _calculator;
 
   Future<void> loadPeriodLogs() async {
-    final logs = await MenstrualLogDatabase.instance.getAllPeriodLogs();
+    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
     if (logs.isEmpty) return;
 
     _calculator = PeriodCalculator(logs);

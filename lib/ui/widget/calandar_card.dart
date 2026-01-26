@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:menstrual_tracking_app/services/cycle_prediction_service.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/utils/svg_icons.dart';
 
 enum CalendarType { start, end }
@@ -19,29 +20,6 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
 
   DateTime currentMonth = DateTime.now();
   List<String> fullWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _getAveragePeriodDuration() async {
-    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
-
-    if (logs.isEmpty) return;
-
-    int totalBleedingDays = 0;
-    for (final log in logs) {
-      // Adding 1 ensures that if start and end are the same day, it counts as 1 day
-      totalBleedingDays += log.endDate.difference(log.startDate).inDays + 1;
-    }
-
-    setState(() {
-      _isLoading = false;
-    });
-  }
 
   List<DateTime> _daysInMonth(DateTime month) {
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
@@ -67,12 +45,20 @@ class _DefaultCalandarState extends State<DefaultCalandar> {
     });
   }
 
+  Future<void> _initLogs() async {
+    await _predictionService.loadPeriodLogs();
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initLogs();
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
     final today = DateTime.now();
     final days = _daysInMonth(currentMonth);
 
