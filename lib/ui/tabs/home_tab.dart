@@ -47,7 +47,13 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> getAveragePeriodDuration() async {
     final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
 
-    if (logs.isEmpty) return;
+    if (logs.isEmpty) {
+      setState(() {
+        periodLogs = logs;
+        averagePeriodLength = 0;
+      });
+      return;
+    }
 
     int totalBleedingDays = 0;
     for (final log in logs) {
@@ -66,9 +72,7 @@ class _HomeTabState extends State<HomeTab> {
     super.initState();
     // Defer data loading until after the first frame to avoid blocking
     // the initial UI rendering.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      getAveragePeriodDuration();
-    });
+    getAveragePeriodDuration();
   }
 
   @override

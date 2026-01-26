@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import 'package:menstrual_tracking_app/ui/pages/form_page.dart';
+import 'package:menstrual_tracking_app/ui/pages/home_page.dart';
 
-class StartPage extends StatelessWidget {
+class StartPage extends StatefulWidget {
   const StartPage({super.key});
+
+  @override
+  State<StartPage> createState() => _StartPageState();
+}
+
+class _StartPageState extends State<StartPage> {
+  Future<void> _onStart() async {
+    final logs = await MenstrualLogDatabase.instance.getPeriodLogs();
+
+    if (logs.isEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (BuildContext context) => FormPage()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (BuildContext context) => HomePage()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +47,7 @@ class StartPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FormPage()),
-                  );
-                },
+                onPressed: _onStart,
                 child: Text(
                   "Get Started",
                   style: TextStyle(fontSize: 24, color: Colors.white),

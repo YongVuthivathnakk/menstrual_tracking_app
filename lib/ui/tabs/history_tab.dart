@@ -5,7 +5,6 @@ import 'package:menstrual_tracking_app/model/symptom_log.dart';
 import 'package:menstrual_tracking_app/services/menstrual_log_database.dart';
 import '../../model/mood_log.dart';
 import '../../model/note_log.dart';
-import 'package:menstrual_tracking_app/services/data_change_notifier.dart';
 
 class HistoryTab extends StatefulWidget {
   const HistoryTab({super.key});
@@ -30,18 +29,11 @@ class _HistoryTabState extends State<HistoryTab> {
     _getAllData();
 
     // Listen for global data changes so we refresh automatically when logs are added
-    DataChangeNotifier.instance.version.addListener(_onDataChanged);
   }
 
   @override
   void dispose() {
-    DataChangeNotifier.instance.version.removeListener(_onDataChanged);
     super.dispose();
-  }
-
-  void _onDataChanged() {
-    // fetch latest data when notified
-    if (mounted) _getAllData();
   }
 
   // Helpers
@@ -59,14 +51,15 @@ class _HistoryTabState extends State<HistoryTab> {
       builder: (context) => AlertDialog(
         title: const Text('Delete Log'),
         content: const Text('Are you sure you want to delete this log?'),
+        backgroundColor: Colors.white,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('No'),
+            child: const Text('No', style: TextStyle(color: Colors.black)),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Yes'),
+            child: const Text('Yes', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -86,7 +79,6 @@ class _HistoryTabState extends State<HistoryTab> {
             ),
           );
         }
-        DataChangeNotifier.instance.notify();
         if (mounted) _getAllData();
       } else {
         if (mounted) {
@@ -156,6 +148,18 @@ class _HistoryTabState extends State<HistoryTab> {
       initialDate: _filterDate ?? today,
       firstDate: DateTime(2000),
       lastDate: DateTime(today.year + 5),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: const Color(0xff9A0002), // Blue color for date picker
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (picked != null) {
@@ -210,8 +214,7 @@ class _HistoryTabState extends State<HistoryTab> {
   Future<void> _getAllData() async {
     final newMoodLogs = await MenstrualLogDatabase.instance.getMoodLogs();
     final newSymptomLogs = await MenstrualLogDatabase.instance.getSymptomLogs();
-    final newPeriodLogs = await MenstrualLogDatabase.instance
-        .getPeriodLogs();
+    final newPeriodLogs = await MenstrualLogDatabase.instance.getPeriodLogs();
     final newNoteLogs = await MenstrualLogDatabase.instance.getNoteLogs();
 
     if (!mounted) return;
