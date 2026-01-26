@@ -1,5 +1,4 @@
 import 'package:menstrual_tracking_app/services/period_calculations_service.dart';
-
 import '../model/period_log.dart';
 import '../services/menstrual_log_database.dart';
 
