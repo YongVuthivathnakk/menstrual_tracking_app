@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'package:menstrual_tracking_app/app.dart';
 import 'package:menstrual_tracking_app/ui/pages/start_page.dart';
 import 'package:menstrual_tracking_app/ui/theme_data.dart';
 
